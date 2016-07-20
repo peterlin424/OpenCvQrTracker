@@ -119,70 +119,79 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 //    drawing.release();
 }
 
-JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
-        (JNIEnv *env, jobject obj, jlong orgImage, jlong cvImage, jlong resultImage){
+JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking_12
+        (JNIEnv * env, jobject obj, jlong orgImage, jlong resultImage){
 
     Mat* orgMat = (Mat*) orgImage;
-    Mat* cvMat = (Mat*) cvImage;
-    Mat* resultMat = (Mat*) resultImage;
-    Mat matColor,matBin;
-    vector<Mat> planes;
+    Mat dstMat = *orgMat;
 
-    // 轉 YCrCb 取 三色通道 並 二值化
-    cvtColor((*orgMat), matColor, COLOR_BGR2YCrCb);
-    split(matColor, planes);
-    threshold(planes[1], matBin, 155, 255, THRESH_BINARY);
+    // 轉 YCrCb , Gaussian blur , 取 三色通道
+    vector<Mat> planes;
+    cvtColor(dstMat, dstMat, COLOR_BGR2YCrCb);
+
+    int MAX_KERNEL_LENGTH = 5;
+    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+    {
+        GaussianBlur( dstMat, dstMat, Size( i, i ), 0, 0 );
+    }
+
+    split(dstMat, planes);
+
+    // 二值化
+    threshold(planes[1], dstMat, 155, 255, THRESH_BINARY);
 
     // 取得輪廓點 和 繪製輪廓
     vector< vector<Point> > contours;
-    Canny( matBin, matBin, 50, 100, 3 );
-    findContours(matBin, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-    matBin.release();
+    vector<Vec4i> hierarchy;
+    Mat canny_output;
 
-    vector<vector<cv::Point> > poly(contours.size());
-    vector<vector<cv::Point> > marker;
-    matColor = Mat::zeros(matColor.size(), CV_8UC3);
+    Canny( dstMat, canny_output, 50, 100, 3 );
+    findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
+    canny_output.release();
+    dstMat.release();
 
+    vector<vector<Point> > poly(contours.size());
+    vector<vector<Point> > marker;
+    vector<Rect> boundRect( contours.size() );
+
+    int count = 0;
     for( int i = 0; i< contours.size(); i++ )
     {
-        Scalar color = Scalar(255, 255, 0);
         double eps = contours[i].size()*0.05;
-
         approxPolyDP(contours[i], poly[i], eps, true); // 計算方形區域
+        boundRect[i] = boundingRect( Mat(poly[i]) );
 
         if (poly[i].size() != 4)                       // 去除非四角型的內容
             continue;
-
         if (!isContourConvex(poly[i]))                 // 去除有缺口的內容
             continue;
-
-        drawContours( matColor, contours, i, color, CV_FILLED, 8, vector<Vec4i>() );
-
-        if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y)) { //
-            drawContours(matColor, poly, i, Scalar(0, 0, 255), 2, 8, vector<Vec4i>(), 0, Point());
+        if (boundRect[i].area() < 900)                 // 去除長方形區域面積低於900
+            continue;
+        if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y))
             marker.push_back(poly[i]);
-        }
-        else{
-            drawContours(matColor, poly, i, Scalar(255, 0, 0), 2, 8, vector<Vec4i>(), 0, Point());
-        }
+
+        Scalar color = Scalar( 0, 255, 0 );
+        rectangle( *orgMat, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
+
+        // todo 繪製顯示
+
+        count++;
     }
-    *cvMat = matColor;
-    matColor.release();
 
-    //
+    Mat* resMat = (Mat*) resultImage;
     Point2f ptsT[] = { Point2f(0, 0), Point2f(0, 79), Point2f(79, 79), Point2f(79, 0) };
-
     for (size_t i = 0; i < marker.size(); i++){
         Point2f ptsS[] = { Point2f(marker[i][0].x, marker[i][0].y),
                            Point2f(marker[i][1].x, marker[i][1].y),
                            Point2f(marker[i][2].x, marker[i][2].y),
                            Point2f(marker[i][3].x, marker[i][3].y) };
-        Mat m = getPerspectiveTransform(ptsS, ptsT);
-        Mat matResult = Mat::zeros(80, 80, CV_8UC3);
+        Mat trsMat = getPerspectiveTransform(ptsS, ptsT);
+        Mat aftMat = Mat::zeros(80, 80, CV_8UC3);
 
-        warpPerspective(*orgMat, matResult, m, matResult.size(), INTER_LINEAR);
+        warpPerspective(*orgMat, aftMat, trsMat, aftMat.size(), INTER_LINEAR);
 
-        *resultMat = matResult;
+        // todo 抓取 mark 透視結果
+        *resMat = aftMat;
     }
 
     return marker.size();
