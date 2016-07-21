@@ -12,7 +12,6 @@
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp>
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp>
 
-
 using namespace cv;
 
 JNIEXPORT jstring JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1HelloJni(
@@ -120,7 +119,7 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 }
 
 JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking_12
-        (JNIEnv * env, jobject obj, jlong orgImage, jlong resultImage){
+        (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages){
 
     Mat* orgMat = (Mat*) orgImage;
     Mat dstMat = *orgMat;
@@ -138,9 +137,9 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
     split(dstMat, planes);
 
     // 二值化
-    threshold(planes[1], dstMat, 155, 255, THRESH_BINARY);
+    threshold(planes[1], dstMat, 140, 255, THRESH_BINARY);
 
-    // 取得輪廓點 和 繪製輪廓
+    // 取得輪廓點
     vector< vector<Point> > contours;
     vector<Vec4i> hierarchy;
     Mat canny_output;
@@ -150,11 +149,11 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
     canny_output.release();
     dstMat.release();
 
+    // 繪製標示框
     vector<vector<Point> > poly(contours.size());
     vector<vector<Point> > marker;
     vector<Rect> boundRect( contours.size() );
 
-    int count = 0;
     for( int i = 0; i< contours.size(); i++ )
     {
         double eps = contours[i].size()*0.05;
@@ -165,7 +164,7 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
             continue;
         if (!isContourConvex(poly[i]))                 // 去除有缺口的內容
             continue;
-        if (boundRect[i].area() < 900)                 // 去除長方形區域面積低於900
+        if (boundRect[i].area() < 600)                 // 去除長方形區域面積低於600
             continue;
         if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y))
             marker.push_back(poly[i]);
@@ -175,10 +174,12 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
 
         // todo 繪製顯示
 
-        count++;
     }
 
-    Mat* resMat = (Mat*) resultImage;
+    // 取得透視結果
+    jlong *imagesArrayData = env->GetLongArrayElements(qrImages, 0);
+    int arrayLen = env->GetArrayLength(qrImages);
+
     Point2f ptsT[] = { Point2f(0, 0), Point2f(0, 79), Point2f(79, 79), Point2f(79, 0) };
     for (size_t i = 0; i < marker.size(); i++){
         Point2f ptsS[] = { Point2f(marker[i][0].x, marker[i][0].y),
@@ -191,7 +192,14 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
         warpPerspective(*orgMat, aftMat, trsMat, aftMat.size(), INTER_LINEAR);
 
         // todo 抓取 mark 透視結果
-        *resMat = aftMat;
+        int count = i/4;
+        if (i%4!=0)
+            continue;
+
+        if (count < arrayLen){
+            Mat& matImage = *(Mat*)imagesArrayData[count];
+            matImage = aftMat;
+        }
     }
 
     return marker.size();
