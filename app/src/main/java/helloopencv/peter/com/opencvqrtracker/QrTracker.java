@@ -22,6 +22,7 @@ import org.opencv.core.Mat;
 public class QrTracker extends AppCompatActivity {
 
     private static final String TAG = "Peter";
+//    private CameraBridgeViewBase mOpenCvCameraView;
     private CameraBridgeViewBase mOpenCvCameraView;
     private myNDK ndk = new myNDK();
     private SubSurfaceView surfaceView;
@@ -67,7 +68,7 @@ public class QrTracker extends AppCompatActivity {
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
             // 原始影像
-            Mat mRgba = inputFrame.rgba(); // RGB 彩色影像
+            mRgba = inputFrame.rgba(); // RGB 彩色影像
 
             // QR影像
             Mat[] qrsMat = new Mat[maxSize];
@@ -78,7 +79,7 @@ public class QrTracker extends AppCompatActivity {
             }
 
             // 追蹤 jni api
-            int c = ndk.jni_QrTracking_2(mRgba.getNativeObjAddr(), qrsAddr);
+            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr);
             Log.d(TAG, "count : " + String.valueOf(c));
 
             // 結果 QR 影像轉換
@@ -93,7 +94,9 @@ public class QrTracker extends AppCompatActivity {
                     String code = QrHelper.getReult(bitmap);
                     Log.d(TAG, "QR code : " + code);
 
-                    qrItems[i] = new QrItem(bitmap, code, 0, i*85);
+                    qrItems[i] = new QrItem(bitmap, code, 10, i*85);
+
+                    ndk.jni_QrDrawing(mRgba.getNativeObjAddr(), i, code);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -120,13 +123,19 @@ public class QrTracker extends AppCompatActivity {
             paintClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             canvas.drawPaint(paintClear);
             paintClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+            paintClear.setColor(Color.parseColor("#ffffff"));
+            paintClear.setStyle(Paint.Style.FILL);
+
+            canvas.drawPaint(paintClear);
 
             // 繪製 QR 資訊
-            for (QrItem temp : qrItems){
-                if (temp != null){
+            int i = 0;
+            for (QrItem temp : qrItems) {
+                if (temp != null) {
                     canvas.drawBitmap(temp.bitmap, temp.imgPos[0], temp.imgPos[1], paint);
                     canvas.drawText(temp.info, temp.infoPos[0], temp.infoPos[1], paint);
                 }
+                i++;
             }
         }
     };
@@ -150,14 +159,15 @@ public class QrTracker extends AppCompatActivity {
         LinearLayout layout = (LinearLayout) findViewById(R.id.ll_subview);
 
         qrItems[0] = new QrItem(BitmapFactory.decodeResource(getResources(),
-                R.drawable.opencv_logo_white), "hello qr tracker", 0, 0) ;
+                R.drawable.opencv_logo_white), "hello qr tracker", 0, 0);
 
         surfaceView = new SubSurfaceView(this, surfaceListener);
 
         layout.addView(surfaceView);
 
         paint.setTextSize(30);         //設定字體大小
-        paint.setColor(Color.LTGRAY);  //設定字體顏色
+        paint.setColor(Color.BLACK);  //設定字體顏色
+
     }
 
     @Override

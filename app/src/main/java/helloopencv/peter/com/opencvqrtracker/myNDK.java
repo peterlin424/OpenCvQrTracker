@@ -22,5 +22,7 @@ public class myNDK {
     public native void jni_GrayDenoisingThresholdContour(long orgImage);
 
     // QrTracking
-    public native int jni_QrTracking_2(long orgImage, long[] qrImages);
+    public native int jni_QrTracking(long orgImage, long[] qrImages);
+
+    public native void jni_QrDrawing(long orgImage, int count, String qrCode);
 }

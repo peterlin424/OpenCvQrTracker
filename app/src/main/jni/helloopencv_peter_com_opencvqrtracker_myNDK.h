@@ -33,11 +33,19 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
- * Method:    jni_QrTracking_2
+ * Method:    jni_QrTracking
  * Signature: (J[J)I
  */
-JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking_12
+JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
   (JNIEnv *, jobject, jlong, jlongArray);
+
+/*
+ * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
+ * Method:    jni_QrDrawing
+ * Signature: (JILjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrDrawing
+  (JNIEnv *, jobject, jlong, jint, jstring);
 
 #ifdef __cplusplus
 }

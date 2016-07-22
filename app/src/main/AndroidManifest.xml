@@ -20,7 +20,8 @@
         <activity
             android:name=".QrTracker"
             android:screenOrientation="landscape"
-            android:configChanges="keyboardHidden|orientation">
+            android:configChanges="keyboardHidden|orientation"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

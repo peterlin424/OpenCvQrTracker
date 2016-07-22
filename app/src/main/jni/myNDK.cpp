@@ -118,9 +118,13 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 //    drawing.release();
 }
 
-JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking_12
+
+vector<vector<Point> > showMarker;
+
+JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
         (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages){
 
+    showMarker.clear();
     Mat* orgMat = (Mat*) orgImage;
     Mat dstMat = *orgMat;
 
@@ -171,9 +175,6 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
 
         Scalar color = Scalar( 0, 255, 0 );
         rectangle( *orgMat, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
-
-        // todo 繪製顯示
-
     }
 
     // 取得透視結果
@@ -199,8 +200,26 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
         if (count < arrayLen){
             Mat& matImage = *(Mat*)imagesArrayData[count];
             matImage = aftMat;
+            showMarker.push_back(marker[i]);
         }
+
+        trsMat.release();
+        aftMat.release();
     }
 
-    return marker.size();
+    return showMarker.size();
+}
+
+JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrDrawing
+        (JNIEnv * env, jobject obj, jlong orgImage, jint count, jstring qrCode){
+
+    if (showMarker.size()>0){
+        Mat* orgMat = (Mat*) orgImage;
+
+        int x = showMarker[count][0].x;
+        int y = showMarker[count][1].y;
+        string str = env->GetStringUTFChars(qrCode, 0);
+
+        putText(*orgMat, str, Point2f(x, y), FONT_HERSHEY_COMPLEX, 1,  Scalar(247,255,46));
+    }
 }
