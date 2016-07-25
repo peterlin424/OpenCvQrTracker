@@ -1,5 +1,6 @@
 package helloopencv.peter.com.opencvqrtracker;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -8,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.LinearLayout;
 
@@ -19,10 +19,9 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
-public class QrTracker extends AppCompatActivity {
+public class QrTracker extends Activity {
 
     private static final String TAG = "Peter";
-//    private CameraBridgeViewBase mOpenCvCameraView;
     private CameraBridgeViewBase mOpenCvCameraView;
     private myNDK ndk = new myNDK();
     private SubSurfaceView surfaceView;

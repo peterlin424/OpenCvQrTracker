@@ -55,6 +55,8 @@ public class SubSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     public void DoDraw(Canvas c){
+        if (c == null)
+            return;
         c.save();
         listener.drawing(c);
         c.restore();
