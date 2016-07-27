@@ -11,6 +11,7 @@ import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -19,11 +20,14 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
+import java.util.ArrayList;
+
 public class QrTracker extends Activity {
 
     private static final String TAG = "Peter";
     private CameraBridgeViewBase mOpenCvCameraView;
     private myNDK ndk = new myNDK();
+    private ThresholdDBA dba;
     private SubSurfaceView surfaceView;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -51,6 +55,12 @@ public class QrTracker extends Activity {
     private Mat mRgba;
     private int maxSize = 10;
     private QrItem[] qrItems = new QrItem[maxSize];
+    private int minThreshold = 131;
+    private int maxThreshold = 255;
+    private boolean isThreshold = false;
+    private boolean isBalanceWhite = false;
+
+    private int clear = 0;
 
     private CameraBridgeViewBase.CvCameraViewListener2 cameraViewListener = new CameraBridgeViewBase.CvCameraViewListener2() {
         @Override
@@ -78,35 +88,69 @@ public class QrTracker extends Activity {
             }
 
             // 追蹤 jni api
-            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr);
+            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr, minThreshold, maxThreshold, isThreshold, isBalanceWhite);
             Log.d(TAG, "count : " + String.valueOf(c));
 
             // 結果 QR 影像轉換
-            int i = 0;
-            for (Mat tempMat : qrsMat){
+            ArrayList<QrItem> temp = new ArrayList<>();
+            for (int i=0; i<qrsMat.length; i++){
+
+                // step1 : tranBp
+                if (qrsMat[i].rows()<=0 || qrsMat[i].cols()<=0)
+                    continue;
+
+                Bitmap bitmap = Bitmap.createBitmap(qrsMat[i].cols(), qrsMat[i].rows(), Bitmap.Config.ARGB_8888);
+                Utils.matToBitmap(qrsMat[i], bitmap);
+
+                Log.d(TAG, "have marker bitmap, Bitmap Width : " + bitmap.getWidth() + ", Height : " + bitmap.getHeight());
+
+                // step2 : check qr code or image target
+                // TODO
+                String code = "";
                 try {
-
-                    Bitmap bitmap = Bitmap.createBitmap(tempMat.cols(), tempMat.rows(), Bitmap.Config.ARGB_8888);
-                    Utils.matToBitmap(tempMat, bitmap);
-                    Log.d(TAG, "have marker bitmap, Bitmap Width : " + bitmap.getWidth() + ", Height : " + bitmap.getHeight());
-
-                    String code = QrHelper.getReult(bitmap);
-                    Log.d(TAG, "QR code : " + code);
-
-                    qrItems[i] = new QrItem(bitmap, code, 10, i*85);
-
-                    ndk.jni_QrDrawing(mRgba.getNativeObjAddr(), i, code);
-
-                } catch (Exception e) {
+                    code = QrHelper.getReult(bitmap);
+                } catch (Exception e){
                     e.printStackTrace();
                 }
-                i++;
+                if (code.equals(""))
+                    continue;
+
+                boolean repeat = false;
+                for (QrItem item : temp){
+                    if (item.info.equals(code)){
+                        repeat = true;
+                    }
+                }
+                if (repeat)
+                    continue;
+
+                Log.d(TAG, "QR code : " + code);
+
+                // step3 : new and draw
+                temp.add(new QrItem(bitmap, code, 10, i*85));
+                ndk.jni_QrDrawing(mRgba.getNativeObjAddr(), i, code);
             }
+
+            for (int i=0; i<temp.size(); ++i){
+                qrItems[i] = temp.get(i);
+            }
+            temp.clear();
 
             // 清除 qrItems
             if (c == 0){
-                qrItems = new QrItem[maxSize];
+                clear++;
+                if (clear > 16){
+                    qrItems = new QrItem[maxSize];
+                    clear = 0;
+                }
             }
+
+            // 釋放
+            for (int i=0; i<qrsMat.length; ++i){
+                qrsMat[i].release();
+            }
+            qrsMat = null;
+            qrsAddr = null;
 
             return mRgba;
         }
@@ -139,6 +183,25 @@ public class QrTracker extends Activity {
         }
     };
 
+    private DebugView debugView;
+    private DebugView.ViewListener viewListener = new DebugView.ViewListener() {
+        @Override
+        public void OnChangeThresholdView(boolean state) {
+            isThreshold = state;
+        }
+
+        @Override
+        public void OnChangeBalanceWhite(boolean state) {
+            isBalanceWhite = state;
+        }
+
+        @Override
+        public void OnChangeMinThreshold(int min) {
+            minThreshold = min;
+            dba.update(String.valueOf(min));
+        }
+    };
+
     static {
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "OpenCV initialization failed");
@@ -152,21 +215,37 @@ public class QrTracker extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_tracker);
 
+        // set OpenCV View
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(cameraViewListener);
 
+        // set Surface View
         LinearLayout layout = (LinearLayout) findViewById(R.id.ll_subview);
-
         qrItems[0] = new QrItem(BitmapFactory.decodeResource(getResources(),
                 R.drawable.opencv_logo_white), "hello qr tracker", 0, 0);
-
         surfaceView = new SubSurfaceView(this, surfaceListener);
-
         layout.addView(surfaceView);
 
+        // set DB data
+        dba = new ThresholdDBA(this);
+        String dbValue = dba.query();
+        if (dbValue != null){
+            minThreshold = Integer.valueOf(dbValue);
+        } else {
+            dba.insert(String.valueOf(minThreshold));
+        }
+
+        // set Debug View
+        debugView = new DebugView(this, viewListener);
+        RelativeLayout llDebug = (RelativeLayout) findViewById(R.id.debug_view);
+        llDebug.addView(debugView);
+        debugView.setMinThreshold(minThreshold);
+        debugView.setThreshold(isThreshold);
+        debugView.setBalanceWhite(isBalanceWhite);
+
+        //
         paint.setTextSize(30);         //設定字體大小
         paint.setColor(Color.BLACK);  //設定字體顏色
-
     }
 
     @Override
@@ -188,5 +267,6 @@ public class QrTracker extends Activity {
     public void onDestroy() {
         super.onDestroy();
         mOpenCvCameraView.disableView();
+        dba.closeDB();
     }
 }

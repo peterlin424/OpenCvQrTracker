@@ -118,15 +118,81 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 //    drawing.release();
 }
 
+// reference http://www.ipol.im/pub/art/2011/llmps-scb/
+void balance_white(cv::Mat mat) {
+    double discard_ratio = 0.05;
+    int hists[3][256];
+    memset(hists, 0, 3*256*sizeof(int));
+
+    for (int y = 0; y < mat.rows; ++y) {
+        uchar* ptr = mat.ptr<uchar>(y);
+        for (int x = 0; x < mat.cols; ++x) {
+            for (int j = 0; j < 3; ++j) {
+                hists[j][ptr[x * 3 + j]] += 1;
+            }
+        }
+    }
+
+    // cumulative hist
+    int total = mat.cols*mat.rows;
+    int vmin[3], vmax[3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 255; ++j) {
+            hists[i][j + 1] += hists[i][j];
+        }
+        vmin[i] = 0;
+        vmax[i] = 255;
+        while (hists[i][vmin[i]] < discard_ratio * total)
+            vmin[i] += 1;
+        while (hists[i][vmax[i]] > (1 - discard_ratio) * total)
+            vmax[i] -= 1;
+        if (vmax[i] < 255 - 1)
+            vmax[i] += 1;
+    }
+
+
+    for (int y = 0; y < mat.rows; ++y) {
+        uchar* ptr = mat.ptr<uchar>(y);
+        for (int x = 0; x < mat.cols; ++x) {
+            for (int j = 0; j < 3; ++j) {
+                int val = ptr[x * 3 + j];
+                if (val < vmin[j])
+                    val = vmin[j];
+                if (val > vmax[j])
+                    val = vmax[j];
+                ptr[x * 3 + j] = static_cast<uchar>((val - vmin[j]) * 255.0 / (vmax[j] - vmin[j]));
+            }
+        }
+    }
+}
 
 vector<vector<Point> > showMarker;
 
 JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
-        (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages){
+        (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages, jint minThreshold, jint maxThreshold, jboolean isThreshold, jboolean isBalanceWhite){
 
     showMarker.clear();
     Mat* orgMat = (Mat*) orgImage;
+
+    if (isBalanceWhite) balance_white(*orgMat);
+
     Mat dstMat = *orgMat;
+
+    // 亮度調整
+//    double alpha = 2; // > 0，gain
+//    double beta = 0;  // bias
+//    Mat brightnessMat = *orgMat;
+//    for( int y = 0; y < orgMat->rows; y++ )
+//    { for( int x = 0; x < orgMat->cols; x++ )
+//        { for( int c = 0; c < 3; c++ )
+//            {
+//                brightnessMat.at<Vec3b>(y,x)[c] =
+//                        saturate_cast<uchar>( alpha*( orgMat->at<Vec3b>(y,x)[c] ) + beta );
+//            }
+//        }
+//    }
+//    *orgMat = brightnessMat;
+//    brightnessMat.release();
 
     // 轉 YCrCb , Gaussian blur , 取 三色通道
     vector<Mat> planes;
@@ -141,14 +207,34 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
     split(dstMat, planes);
 
     // 二值化
-    threshold(planes[1], dstMat, 140, 255, THRESH_BINARY);
+    threshold(planes[1], dstMat, minThreshold, maxThreshold, THRESH_BINARY);
+    if (isThreshold) *orgMat = dstMat;
+
+    // 侵蝕膨脹
+//    int dilation_size = 5;
+//    Mat element_dilation = getStructuringElement( BORDER_CONSTANT,
+//                                         Size( 2*dilation_size + 1, 2*dilation_size + 1 ),
+//                                         Point( dilation_size, dilation_size ) );
+//    dilate(dstMat, dstMat, element_dilation);    // 膨脹
+//    element_dilation.release();
+//
+//    int erosion_size = 1;
+//    Mat element_erosion = getStructuringElement( MORPH_RECT,
+//                                      Size( 2*erosion_size + 1, 2*erosion_size + 1 ),
+//                                      Point(erosion_size,erosion_size));
+//    erode(dstMat,dstMat,element_erosion);     // 侵蝕
+//    element_erosion.release();
+//
+//    if (isThreshold) *orgMat = dstMat;
 
     // 取得輪廓點
     vector< vector<Point> > contours;
     vector<Vec4i> hierarchy;
     Mat canny_output;
 
-    Canny( dstMat, canny_output, 50, 100, 3 );
+    blur(dstMat, dstMat, Point(3,3));
+    Canny( dstMat, canny_output, 50, 150, 3 );
+
     findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
     canny_output.release();
     dstMat.release();
@@ -168,13 +254,20 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
             continue;
         if (!isContourConvex(poly[i]))                 // 去除有缺口的內容
             continue;
-        if (boundRect[i].area() < 600)                 // 去除長方形區域面積低於600
+        if (boundRect[i].area() < 400)                 // 去除長方形區域面積低於 400
             continue;
         if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y))
             marker.push_back(poly[i]);
 
         Scalar color = Scalar( 0, 255, 0 );
-        rectangle( *orgMat, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
+
+//        rectangle( *orgMat, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
+
+        line( *orgMat, poly[i][0], poly[i][1], color, 2, 8 );
+        line( *orgMat, poly[i][1], poly[i][2], color, 2, 8 );
+        line( *orgMat, poly[i][2], poly[i][3], color, 2, 8 );
+        line( *orgMat, poly[i][3], poly[i][0], color, 2, 8 );
+
     }
 
     // 取得透視結果
@@ -210,6 +303,7 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
     return showMarker.size();
 }
 
+
 JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrDrawing
         (JNIEnv * env, jobject obj, jlong orgImage, jint count, jstring qrCode){
 
@@ -222,4 +316,15 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
 
         putText(*orgMat, str, Point2f(x, y), FONT_HERSHEY_COMPLEX, 1,  Scalar(247,255,46));
     }
+}
+
+JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
+        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
+
+    Mat* orgMat = (Mat*) orgImage;
+    Mat* tmpMat = (Mat*) tmpImage;
+    Mat dstMat = Mat(orgMat->rows, orgMat->cols, CV_8UC1);
+
+    matchTemplate(*orgMat, *tmpMat, dstMat, TM_SQDIFF_NORMED);
+
 }
