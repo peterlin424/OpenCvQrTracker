@@ -263,35 +263,40 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
 }
 
 JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
-        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage, jint rectColorR, jint rectColorG, jint rectColorB){
+        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage, jlong debugImage){
 
     Mat* orgMat = (Mat*) orgImage;
     Mat* tmpMat = (Mat*) tmpImage;
-    Mat dstMat = Mat(orgMat->rows, orgMat->cols, CV_8UC1);
+    Mat* debugMat = (Mat*) debugImage;
 
-//    Mat orgGmat;
-//    Mat tmpGmat;
-//    cvtColor(*orgMat, orgGmat, CV_BGR2GRAY);
-//    cvtColor(*tmpMat, tmpGmat, CV_BGR2GRAY);
+    // Resize tmpImage
+    Size size = Size(orgMat->cols, orgMat->rows);
+    resize(*tmpMat, *tmpMat, size, INTER_LINEAR);
 
     // 模板匹配
+    Mat dstMat;
+    dstMat.create(orgMat->rows - orgMat->rows+1, orgMat->cols - orgMat->cols+1, CV_8UC4);
     matchTemplate(*orgMat, *tmpMat, dstMat, TM_SQDIFF_NORMED);
 
-    double min, max;
-    Point minLoc;
-    Point maxLoc;
-    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+    // Resize debugImage
+    *debugMat = dstMat;
+    resize(*debugMat, *debugMat, size, INTER_LINEAR);
 
-    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
-    // else top left point = maxLoc
-    Point topLeft = minLoc;
-    Point bottomRight = Point(minLoc.x + 100, minLoc.y + 100);
-    Scalar color = Scalar( rectColorR, rectColorG, rectColorB );
+//    double min, max;
+//    Point minLoc;
+//    Point maxLoc;
+//    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+//
+//    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
+//    // else top left point = maxLoc
+//    Point topLeft = minLoc;
+//    Point bottomRight = Point(minLoc.x + 100, minLoc.y + 100);
+//    Scalar color = Scalar( rectColorR, rectColorG, rectColorB );
+//
+//    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
+//
+//    *debugMat = dstMat;
 
-    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
-
-    dstMat.release();
-//    orgGmat.release();
-//    tmpGmat.release();
+//    dstMat.release();
     return true;
 }
