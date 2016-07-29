@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
 //        ndk.jni_FeatureDetector(gryMat.getNativeObjAddr(), orgMat.getNativeObjAddr(), dstMat.getNativeObjAddr());
 //        gryMat.release();
 
-//      // 抓取輪廓
+        // 抓取輪廓
         ndk.jni_GrayDenoisingThresholdContour(orgMat.getNativeObjAddr());
 
         // 轉換 Bitmap

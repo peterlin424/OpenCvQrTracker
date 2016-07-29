@@ -178,31 +178,9 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
 
     Mat dstMat = *orgMat;
 
-    // 亮度調整
-//    double alpha = 2; // > 0，gain
-//    double beta = 0;  // bias
-//    Mat brightnessMat = *orgMat;
-//    for( int y = 0; y < orgMat->rows; y++ )
-//    { for( int x = 0; x < orgMat->cols; x++ )
-//        { for( int c = 0; c < 3; c++ )
-//            {
-//                brightnessMat.at<Vec3b>(y,x)[c] =
-//                        saturate_cast<uchar>( alpha*( orgMat->at<Vec3b>(y,x)[c] ) + beta );
-//            }
-//        }
-//    }
-//    *orgMat = brightnessMat;
-//    brightnessMat.release();
-
     // 轉 YCrCb , Gaussian blur , 取 三色通道
     vector<Mat> planes;
     cvtColor(dstMat, dstMat, COLOR_BGR2YCrCb);
-
-    int MAX_KERNEL_LENGTH = 5;
-    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-    {
-        GaussianBlur( dstMat, dstMat, Size( i, i ), 0, 0 );
-    }
 
     split(dstMat, planes);
 
@@ -210,64 +188,34 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
     threshold(planes[1], dstMat, minThreshold, maxThreshold, THRESH_BINARY);
     if (isThreshold) *orgMat = dstMat;
 
-    // 侵蝕膨脹
-//    int dilation_size = 5;
-//    Mat element_dilation = getStructuringElement( BORDER_CONSTANT,
-//                                         Size( 2*dilation_size + 1, 2*dilation_size + 1 ),
-//                                         Point( dilation_size, dilation_size ) );
-//    dilate(dstMat, dstMat, element_dilation);    // 膨脹
-//    element_dilation.release();
-//
-//    int erosion_size = 1;
-//    Mat element_erosion = getStructuringElement( MORPH_RECT,
-//                                      Size( 2*erosion_size + 1, 2*erosion_size + 1 ),
-//                                      Point(erosion_size,erosion_size));
-//    erode(dstMat,dstMat,element_erosion);     // 侵蝕
-//    element_erosion.release();
-//
-//    if (isThreshold) *orgMat = dstMat;
-
     // 取得輪廓點
     vector< vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    Mat canny_output;
-
-    blur(dstMat, dstMat, Point(3,3));
-    Canny( dstMat, canny_output, 50, 150, 3 );
-
-    findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
-    canny_output.release();
+    findContours( dstMat, contours, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
     dstMat.release();
 
     // 繪製標示框
     vector<vector<Point> > poly(contours.size());
     vector<vector<Point> > marker;
-    vector<Rect> boundRect( contours.size() );
 
     for( int i = 0; i< contours.size(); i++ )
     {
         double eps = contours[i].size()*0.05;
         approxPolyDP(contours[i], poly[i], eps, true); // 計算方形區域
-        boundRect[i] = boundingRect( Mat(poly[i]) );
 
+        double area=fabs(contourArea(contours[i], false));
+        if (area<300)                                  // 去除小區域資料
+            continue;
         if (poly[i].size() != 4)                       // 去除非四角型的內容
             continue;
         if (!isContourConvex(poly[i]))                 // 去除有缺口的內容
             continue;
-        if (boundRect[i].area() < 400)                 // 去除長方形區域面積低於 400
-            continue;
-        if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y))
+
+        if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y)){
+            drawContours(*orgMat, poly, i, Scalar(0, 0, 255), 2, 8, vector<Vec4i>(), 0, Point());
             marker.push_back(poly[i]);
-
-        Scalar color = Scalar( 0, 255, 0 );
-
-//        rectangle( *orgMat, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
-
-        line( *orgMat, poly[i][0], poly[i][1], color, 2, 8 );
-        line( *orgMat, poly[i][1], poly[i][2], color, 2, 8 );
-        line( *orgMat, poly[i][2], poly[i][3], color, 2, 8 );
-        line( *orgMat, poly[i][3], poly[i][0], color, 2, 8 );
-
+        } else {
+            drawContours(*orgMat, poly, i, Scalar(255, 0, 0), 2, 8, vector<Vec4i>(), 0, Point());
+        }
     }
 
     // 取得透視結果
@@ -286,12 +234,8 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
         warpPerspective(*orgMat, aftMat, trsMat, aftMat.size(), INTER_LINEAR);
 
         // todo 抓取 mark 透視結果
-        int count = i/4;
-        if (i%4!=0)
-            continue;
-
-        if (count < arrayLen){
-            Mat& matImage = *(Mat*)imagesArrayData[count];
+        if (i < arrayLen){
+            Mat& matImage = *(Mat*)imagesArrayData[i];
             matImage = aftMat;
             showMarker.push_back(marker[i]);
         }
@@ -310,8 +254,8 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
     if (showMarker.size()>0){
         Mat* orgMat = (Mat*) orgImage;
 
-        int x = showMarker[count][0].x;
-        int y = showMarker[count][1].y;
+        int x = (showMarker[count][0].x + showMarker[count][1].x + showMarker[count][2].x + showMarker[count][3].x)/4;
+        int y = (showMarker[count][0].y + showMarker[count][1].y + showMarker[count][2].y + showMarker[count][3].y)/4;
         string str = env->GetStringUTFChars(qrCode, 0);
 
         putText(*orgMat, str, Point2f(x, y), FONT_HERSHEY_COMPLEX, 1,  Scalar(247,255,46));
@@ -319,12 +263,35 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
 }
 
 JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
-        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
+        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage, jint rectColorR, jint rectColorG, jint rectColorB){
 
     Mat* orgMat = (Mat*) orgImage;
     Mat* tmpMat = (Mat*) tmpImage;
     Mat dstMat = Mat(orgMat->rows, orgMat->cols, CV_8UC1);
 
+//    Mat orgGmat;
+//    Mat tmpGmat;
+//    cvtColor(*orgMat, orgGmat, CV_BGR2GRAY);
+//    cvtColor(*tmpMat, tmpGmat, CV_BGR2GRAY);
+
+    // 模板匹配
     matchTemplate(*orgMat, *tmpMat, dstMat, TM_SQDIFF_NORMED);
 
+    double min, max;
+    Point minLoc;
+    Point maxLoc;
+    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+
+    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
+    // else top left point = maxLoc
+    Point topLeft = minLoc;
+    Point bottomRight = Point(minLoc.x + 100, minLoc.y + 100);
+    Scalar color = Scalar( rectColorR, rectColorG, rectColorB );
+
+    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
+
+    dstMat.release();
+//    orgGmat.release();
+//    tmpGmat.release();
+    return true;
 }

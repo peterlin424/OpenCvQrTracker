@@ -18,7 +18,9 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
 import java.util.ArrayList;
 
@@ -52,15 +54,13 @@ public class QrTracker extends Activity {
         }
     };
 
-    private Mat mRgba;
+    private Mat mRgba, matcher, matcher2;
     private int maxSize = 10;
     private QrItem[] qrItems = new QrItem[maxSize];
     private int minThreshold = 131;
     private int maxThreshold = 255;
     private boolean isThreshold = false;
     private boolean isBalanceWhite = false;
-
-    private int clear = 0;
 
     private CameraBridgeViewBase.CvCameraViewListener2 cameraViewListener = new CameraBridgeViewBase.CvCameraViewListener2() {
         @Override
@@ -105,7 +105,6 @@ public class QrTracker extends Activity {
                 Log.d(TAG, "have marker bitmap, Bitmap Width : " + bitmap.getWidth() + ", Height : " + bitmap.getHeight());
 
                 // step2 : check qr code or image target
-                // TODO
                 String code = "";
                 try {
                     code = QrHelper.getReult(bitmap);
@@ -136,21 +135,15 @@ public class QrTracker extends Activity {
             }
             temp.clear();
 
+            // 擴增 陣列長度
+            if (c > maxSize) maxSize = c;
             // 清除 qrItems
-            if (c == 0){
-                clear++;
-                if (clear > 16){
-                    qrItems = new QrItem[maxSize];
-                    clear = 0;
-                }
-            }
+            if (c == 0) qrItems = new QrItem[maxSize];
 
             // 釋放
             for (int i=0; i<qrsMat.length; ++i){
                 qrsMat[i].release();
             }
-            qrsMat = null;
-            qrsAddr = null;
 
             return mRgba;
         }
@@ -246,6 +239,15 @@ public class QrTracker extends Activity {
         //
         paint.setTextSize(30);         //設定字體大小
         paint.setColor(Color.BLACK);  //設定字體顏色
+
+        //
+        Bitmap mbp = BitmapFactory.decodeResource(getResources(), R.drawable.match);
+        matcher = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        Utils.bitmapToMat(mbp, matcher);
+
+        Bitmap mbp2 = BitmapFactory.decodeResource(getResources(), R.drawable.match2);
+        matcher2 = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        Utils.bitmapToMat(mbp2, matcher2);
     }
 
     @Override
