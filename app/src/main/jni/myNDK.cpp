@@ -7,10 +7,10 @@
 
 #include "helloopencv_peter_com_opencvqrtracker_myNDK.h"
 
-#include </Users/apple/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp>
-#include </Users/apple/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/contrib/detection_based_tracker.hpp>
-#include </Users/apple/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp>
-#include </Users/apple/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp>
+#include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp>
+#include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/contrib/detection_based_tracker.hpp>
+#include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp>
+#include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp>
 
 using namespace cv;
 
@@ -229,7 +229,7 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
                            Point2f(marker[i][2].x, marker[i][2].y),
                            Point2f(marker[i][3].x, marker[i][3].y) };
         Mat trsMat = getPerspectiveTransform(ptsS, ptsT);
-        Mat aftMat = Mat::zeros(80, 80, CV_8U);
+        Mat aftMat = Mat::zeros(80, 80, CV_8UC1);
 
         warpPerspective(*orgMat, aftMat, trsMat, aftMat.size(), INTER_LINEAR);
 
@@ -274,7 +274,7 @@ JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1
 
     //
     double out = 0;
-    Mat sub = (*orgMat - *tmpMat)^2;
+    Mat sub = abs(*orgMat - *tmpMat);
     for (int i=0; i<orgMat->cols; i++){
         for (int j = 0; j < orgMat->rows; ++j) {
             uchar value0 = sub.at<Vec3b>(i,j)[0];

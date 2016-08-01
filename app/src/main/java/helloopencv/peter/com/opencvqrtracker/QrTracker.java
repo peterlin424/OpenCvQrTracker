@@ -253,11 +253,11 @@ public class QrTracker extends Activity {
 
         //
         Bitmap mbp = BitmapFactory.decodeResource(getResources(), R.drawable.match);
-        matcher[0] = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8U, new Scalar(4));
+        matcher[0] = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8UC1, new Scalar(4));
         Utils.bitmapToMat(mbp, matcher[0]);
 
         Bitmap mbp2 = BitmapFactory.decodeResource(getResources(), R.drawable.match2);
-        matcher[1] = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8U, new Scalar(4));
+        matcher[1] = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8UC1, new Scalar(4));
         Utils.bitmapToMat(mbp2, matcher[1]);
     }
 
