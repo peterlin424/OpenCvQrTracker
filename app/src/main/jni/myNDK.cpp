@@ -263,11 +263,10 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
 }
 
 JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
-        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage, jlong debugImage){
+        (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
 
     Mat* orgMat = (Mat*) orgImage;
     Mat* tmpMat = (Mat*) tmpImage;
-    Mat* debugMat = (Mat*) debugImage;
 
     // Resize tmpImage
     Size size = Size(orgMat->cols, orgMat->rows);
@@ -277,10 +276,6 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     Mat dstMat;
     dstMat.create(orgMat->rows - orgMat->rows+1, orgMat->cols - orgMat->cols+1, CV_8UC4);
     matchTemplate(*orgMat, *tmpMat, dstMat, TM_SQDIFF_NORMED);
-
-    // Resize debugImage
-    *debugMat = dstMat;
-    resize(*debugMat, *debugMat, size, INTER_LINEAR);
 
 //    double min, max;
 //    Point minLoc;
@@ -294,9 +289,7 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
 //    Scalar color = Scalar( rectColorR, rectColorG, rectColorB );
 //
 //    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
-//
-//    *debugMat = dstMat;
 
 //    dstMat.release();
-    return true;
+    return false;
 }
