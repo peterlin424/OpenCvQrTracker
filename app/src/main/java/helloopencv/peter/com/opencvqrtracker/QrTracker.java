@@ -117,7 +117,6 @@ public class QrTracker extends Activity {
                 Utils.bitmapToMat(bitmap, bpMat);
                 boolean isMatch = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].getNativeObjAddr());
                 if (isMatch){
-
                     code = "matcher";
                 }
 
@@ -154,6 +153,9 @@ public class QrTracker extends Activity {
             for (int i=0; i<qrsMat.length; ++i){
                 qrsMat[i].release();
             }
+
+//            if (!isThreshold && mRgba!=null && matcher[0]!=null)
+//                ndk.jni_ImageMatching_test(mRgba.getNativeObjAddr(), matcher[0].getNativeObjAddr());
 
             return mRgba;
         }

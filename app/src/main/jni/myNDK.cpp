@@ -272,24 +272,70 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     Size size = Size(orgMat->cols, orgMat->rows);
     resize(*tmpMat, *tmpMat, size, INTER_LINEAR);
 
+    // 灰階
+    Mat gryMat, tmpGryMat;
+    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
+    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
+
     // 模板匹配
     Mat dstMat;
-    dstMat.create(orgMat->rows - orgMat->rows+1, orgMat->cols - orgMat->cols+1, CV_8UC4);
-    matchTemplate(*orgMat, *tmpMat, dstMat, TM_SQDIFF_NORMED);
+    int result_cols =  gryMat.cols - tmpMat->cols + 1;
+    int result_rows = gryMat.rows - tmpMat->rows + 1;
+    dstMat.create(result_rows, result_cols, CV_8UC1);
+    matchTemplate(gryMat, tmpGryMat, dstMat, TM_SQDIFF_NORMED);
+    gryMat.release();
+    tmpGryMat.release();
 
-//    double min, max;
-//    Point minLoc;
-//    Point maxLoc;
-//    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
-//
-//    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
-//    // else top left point = maxLoc
-//    Point topLeft = minLoc;
-//    Point bottomRight = Point(minLoc.x + 100, minLoc.y + 100);
-//    Scalar color = Scalar( rectColorR, rectColorG, rectColorB );
-//
-//    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
+    //
+    double min, max;
+    Point minLoc;
+    Point maxLoc;
+    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+    dstMat.release();
 
-//    dstMat.release();
-    return false;
+    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
+    // else top left point = maxLoc
+    Point topLeft = minLoc;
+    Point bottomRight = Point(minLoc.x + tmpMat->cols, minLoc.y + tmpMat->rows);
+    Scalar color = Scalar( 255, 255, 0 );
+
+    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
+
+    return true;
+}
+
+
+JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching_1test
+        (JNIEnv * env, jobject obj, jlong orgImage, jlong tmpImage){
+
+    Mat* orgMat = (Mat*) orgImage;
+    Mat* tmpMat = (Mat*) tmpImage;
+
+    Mat gryMat, tmpGryMat;
+    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
+    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
+
+    Mat dstMat;
+    int result_cols =  gryMat.cols - tmpMat->cols + 1;
+    int result_rows = gryMat.rows - tmpMat->rows + 1;
+    dstMat.create(result_rows, result_cols, CV_8UC1);
+
+    matchTemplate(gryMat, tmpGryMat, dstMat, TM_SQDIFF_NORMED);
+    gryMat.release();
+
+    double min, max;
+    Point minLoc;
+    Point maxLoc;
+    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+    dstMat.release();
+
+    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
+    // else top left point = maxLoc
+    Point topLeft = minLoc;
+    Point bottomRight = Point(minLoc.x + tmpMat->cols, minLoc.y + tmpMat->rows);
+    Scalar color = Scalar( 255, 255, 0 );
+
+    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
+
+    return true;
 }
