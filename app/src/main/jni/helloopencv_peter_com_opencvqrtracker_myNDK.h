@@ -50,10 +50,10 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
  * Method:    jni_ImageMatching
- * Signature: (JJJ)Z
+ * Signature: (JJ)D
  */
-JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
-  (JNIEnv *, jobject, jlong, jlong, jlong);
+JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
+  (JNIEnv *, jobject, jlong, jlong);
 
 #ifdef __cplusplus
 }

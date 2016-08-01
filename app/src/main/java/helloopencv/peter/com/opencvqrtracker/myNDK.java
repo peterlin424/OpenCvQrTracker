@@ -26,5 +26,5 @@ public class myNDK {
 
     public native void jni_QrDrawing(long orgImage, int count, String qrCode);
 
-    public native boolean jni_ImageMatching(long orgImage, long tmpImage,long debugImage);
+    public native double jni_ImageMatching(long orgImage, long tmpImage);
 }

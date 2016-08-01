@@ -115,12 +115,12 @@ public class QrTracker extends Activity {
 
                 Mat bpMat = new Mat();
                 Utils.bitmapToMat(bitmap, bpMat);
-                Mat debugMat = new Mat();
-                boolean isMatch = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].getNativeObjAddr(), debugMat.getNativeObjAddr());
-                if (isMatch){
-                    Utils.matToBitmap(debugMat, bitmap);
-                    code = "matcher";
-                }
+                double min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].getNativeObjAddr());
+//                if (isMatch>0){
+//                    code = "matcher";
+//                }
+                Log.d(TAG, "match min result : " + String.valueOf(min));
+                code = "matcher";
 
                 if (code.equals(""))
                     continue;
@@ -253,11 +253,11 @@ public class QrTracker extends Activity {
 
         //
         Bitmap mbp = BitmapFactory.decodeResource(getResources(), R.drawable.match);
-        matcher[0] = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        matcher[0] = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8U, new Scalar(4));
         Utils.bitmapToMat(mbp, matcher[0]);
 
         Bitmap mbp2 = BitmapFactory.decodeResource(getResources(), R.drawable.match2);
-        matcher[1] = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        matcher[1] = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8U, new Scalar(4));
         Utils.bitmapToMat(mbp2, matcher[1]);
     }
 
