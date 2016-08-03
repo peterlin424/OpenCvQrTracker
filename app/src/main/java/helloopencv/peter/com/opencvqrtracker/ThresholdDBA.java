@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.HashMap;
+
 /**
  * Created by linweijie on 7/27/16.
  */
@@ -14,10 +16,12 @@ public class ThresholdDBA {
 
     public final static String COL_ID = "_ID";
     public final static String COL_THRESHOLD = "_THRESHOLD";
+    public final static String COL_WHITEBALANCE = "_WHITEBALANCE";
 
     public static String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "( " +
                             COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                            COL_THRESHOLD + " TEXT NOT NULL" +
+                            COL_THRESHOLD + " TEXT NOT NULL, " +
+                            COL_WHITEBALANCE + " TEXT NOT NULL" +
                         ");";
     public static String DROP_TABLE = "DROP TABLE " + TABLE_NAME;
 
@@ -30,24 +34,34 @@ public class ThresholdDBA {
         db.close();
     }
 
-    public long insert(String thv){
+    public long insert(String thv, String wbv){
         ContentValues values = new ContentValues();
         values.put(COL_THRESHOLD, thv);
+        values.put(COL_WHITEBALANCE, wbv);
         return db.insert(TABLE_NAME, null, values);
     }
 
-    public int update(String thv){
+    public int update(String thv, String wbv){
         String where = COL_ID + "=" + 1;
         ContentValues values = new ContentValues();
         values.put(COL_THRESHOLD, thv);
+        values.put(COL_WHITEBALANCE, wbv);
         return db.update(TABLE_NAME, values, where, null);
     }
 
-    public String query(){
+    public HashMap<String, String> query(){
         String where = COL_ID + "=" + 1;
         Cursor cursor = db.query(TABLE_NAME, null, where, null, null, null, null);
-        if (cursor.moveToFirst())
-            return cursor.getString(cursor.getColumnIndex(COL_THRESHOLD));
+
+        HashMap<String, String> out = new HashMap<>();
+        if (cursor.moveToFirst()){
+            String thv = cursor.getString(cursor.getColumnIndex(COL_THRESHOLD));
+            String wbv = cursor.getString(cursor.getColumnIndex(COL_WHITEBALANCE));
+            out.put(COL_THRESHOLD, thv);
+            out.put(COL_WHITEBALANCE, wbv);
+            return out;
+        }
+
         return null;
     }
 

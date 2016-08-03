@@ -34,10 +34,10 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
  * Method:    jni_QrTracking
- * Signature: (J[JIIZZ)I
+ * Signature: (J[JIIZZD)I
  */
 JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
-  (JNIEnv *, jobject, jlong, jlongArray, jint, jint, jboolean, jboolean);
+  (JNIEnv *, jobject, jlong, jlongArray, jint, jint, jboolean, jboolean, jdouble);
 
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
@@ -58,9 +58,9 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
  * Method:    jni_ImageMatching_test
- * Signature: (JJ)Z
+ * Signature: (JJ)D
  */
-JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching_1test
+JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching_1test
   (JNIEnv *, jobject, jlong, jlong);
 
 #ifdef __cplusplus

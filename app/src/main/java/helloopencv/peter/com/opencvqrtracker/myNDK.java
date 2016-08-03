@@ -22,13 +22,12 @@ public class myNDK {
     public native void jni_GrayDenoisingThresholdContour(long orgImage);
 
     // QrTracking
-    public native int jni_QrTracking(long orgImage, long[] qrImages, int minThreshold, int maxThreshold, boolean isThreshold, boolean isBalanceWhite);
+    public native int jni_QrTracking(long orgImage, long[] qrImages, int minThreshold, int maxThreshold, boolean isThreshold, boolean isBalanceWhite, double whiteBalance);
 
     public native void jni_QrDrawing(long orgImage, int count, String qrCode);
 
     public native boolean jni_ImageMatching(long orgImage, long tmpImage);
 
-    public native boolean jni_ImageMatching_test(long orgImage, long tmpImage);
-
+    public native double jni_ImageMatching_test(long orgImage, long tmpImage);
 
 }

@@ -23,8 +23,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class QrTracker extends Activity {
+public class QrTrackerActivity extends Activity {
 
     private static final String TAG = "Peter";
     private CameraBridgeViewBase mOpenCvCameraView;
@@ -55,11 +56,12 @@ public class QrTracker extends Activity {
     };
 
     private Mat mRgba;
-    private Mat[] matcher = new Mat[2];
+    private Mat[] matcher = new Mat[3];
     private int maxSize = 10;
     private QrItem[] qrItems = new QrItem[maxSize];
     private int minThreshold = 131;
     private int maxThreshold = 255;
+    private int whiteBalance = 5;
     private boolean isThreshold = false;
     private boolean isBalanceWhite = false;
 
@@ -89,7 +91,9 @@ public class QrTracker extends Activity {
             }
 
             // 追蹤 jni api
-            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr, minThreshold, maxThreshold, isThreshold, isBalanceWhite);
+            double ratio = (double)whiteBalance / 100.f;
+            Log.d(TAG, "whiteBalance ratio : " + String.valueOf(ratio));
+            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr, minThreshold, maxThreshold, isThreshold, isBalanceWhite, ratio);
             Log.d(TAG, "count : " + String.valueOf(c));
 
             // 結果 QR 影像轉換
@@ -116,9 +120,11 @@ public class QrTracker extends Activity {
                 Mat bpMat = new Mat();
                 Utils.bitmapToMat(bitmap, bpMat);
                 boolean isMatch = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].getNativeObjAddr());
-                if (isMatch){
-                    code = "matcher";
-                }
+                if (isMatch) code = "matcher1";
+                boolean isMatch2 = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1].getNativeObjAddr());
+                if (isMatch2) code = "matcher2";
+                boolean isMatch3 = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2].getNativeObjAddr());
+                if (isMatch3) code = "matcher3";
 
                 if (code.equals(""))
                     continue;
@@ -203,7 +209,13 @@ public class QrTracker extends Activity {
         @Override
         public void OnChangeMinThreshold(int min) {
             minThreshold = min;
-            dba.update(String.valueOf(min));
+            dba.update(String.valueOf(minThreshold), String.valueOf(whiteBalance));
+        }
+
+        @Override
+        public void OnChangeWhiteBalance(int wb) {
+            whiteBalance = wb;
+            dba.update(String.valueOf(minThreshold), String.valueOf(whiteBalance));
         }
     };
 
@@ -233,11 +245,12 @@ public class QrTracker extends Activity {
 
         // set DB data
         dba = new ThresholdDBA(this);
-        String dbValue = dba.query();
+        HashMap<String, String> dbValue = dba.query();
         if (dbValue != null){
-            minThreshold = Integer.valueOf(dbValue);
+            minThreshold = Integer.valueOf(dbValue.get(ThresholdDBA.COL_THRESHOLD));
+            whiteBalance = Integer.valueOf(dbValue.get(ThresholdDBA.COL_WHITEBALANCE));
         } else {
-            dba.insert(String.valueOf(minThreshold));
+            dba.insert(String.valueOf(minThreshold), String.valueOf(whiteBalance));
         }
 
         // set Debug View
@@ -245,6 +258,7 @@ public class QrTracker extends Activity {
         RelativeLayout llDebug = (RelativeLayout) findViewById(R.id.debug_view);
         llDebug.addView(debugView);
         debugView.setMinThreshold(minThreshold);
+        debugView.setWhiteBalance(whiteBalance);
         debugView.setThreshold(isThreshold);
         debugView.setBalanceWhite(isBalanceWhite);
 
@@ -253,13 +267,17 @@ public class QrTracker extends Activity {
         paint.setColor(Color.BLACK);  //設定字體顏色
 
         //
-        Bitmap mbp = BitmapFactory.decodeResource(getResources(), R.drawable.match);
+        Bitmap mbp = BitmapFactory.decodeResource(getResources(), R.drawable.input1_1);
         matcher[0] = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8UC1, new Scalar(4));
         Utils.bitmapToMat(mbp, matcher[0]);
 
-        Bitmap mbp2 = BitmapFactory.decodeResource(getResources(), R.drawable.match2);
+        Bitmap mbp2 = BitmapFactory.decodeResource(getResources(), R.drawable.input1_2);
         matcher[1] = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8UC1, new Scalar(4));
         Utils.bitmapToMat(mbp2, matcher[1]);
+
+        Bitmap mbp3 = BitmapFactory.decodeResource(getResources(), R.drawable.input1_3);
+        matcher[2] = new Mat(mbp3.getHeight(), mbp3.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        Utils.bitmapToMat(mbp3, matcher[2]);
     }
 
     @Override
