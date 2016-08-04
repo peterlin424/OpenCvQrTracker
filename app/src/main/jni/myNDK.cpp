@@ -32,7 +32,7 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Fea
 
     //OrbFeatureDetector detector(50);
     OrbFeatureDetector detector;
-    OrbDescriptorExtractor  extractor;
+    OrbDescriptorExtractor extractor;
     detector.detect(*pMatGr, v);
     extractor.compute( *pMatGr, v, *pMatDesc );
     circle(*pMatRgb, Point(100,100), 10, Scalar(5,128,255,255));
@@ -367,3 +367,62 @@ JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1
     return min;
 }
 
+JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureMatching_1test
+  (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
+
+    bool isCheck = false;
+
+    //-- Step 0: Grayscale
+    Mat* orgMat = (Mat*) orgImage;
+    Mat* tmpMat = (Mat*) tmpImage;
+
+    Mat gryMat, tmpGryMat;
+    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
+    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
+
+    //-- Step 1: setting detector
+    Ptr<FeatureDetector> detector = FeatureDetector::create( "SIFT" );
+    Ptr<DescriptorExtractor> descriptor_extractor = DescriptorExtractor::create( "SIFT" );
+    Ptr<DescriptorMatcher> descriptor_matcher = DescriptorMatcher::create( "BruteForce" );
+    if( detector.empty() || descriptor_extractor.empty() )
+        return isCheck;        // fail to create detector!
+
+    //-- Step 1: Detect the keypoints
+    vector<KeyPoint> sceneKey,matcherKey;
+    detector->detect( gryMat, sceneKey );
+    detector->detect( gryMat, matcherKey );
+
+    circle(*orgMat, Point(100,100), 10, Scalar(5,128,255,255));
+    for( size_t i = 0; i < sceneKey.size(); i++ ) {
+        circle(*orgMat, Point(sceneKey[i].pt.x, sceneKey[i].pt.y), 10, Scalar(255,128,0,255));
+    }
+    circle(*tmpMat, Point(100,100), 10, Scalar(5,128,255,255));
+    for( size_t i = 0; i < matcherKey.size(); i++ ) {
+        circle(*tmpMat, Point(matcherKey[i].pt.x, matcherKey[i].pt.y), 10, Scalar(255,128,0,255));
+    }
+
+    //-- Step 2: Calculate descriptors (feature vectors)
+
+
+  //-- Step 3: Matching descriptor vectors using FLANN matcher
+
+    //-- Quick calculation of max and min distances between keypoints
+
+
+  //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
+
+    //-- Localize the object
+
+
+  //-- Get the corners from the image_1 ( the object to be "detected" )
+
+
+  //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+
+
+  //-- Show detected matches
+
+
+
+  // http://docs.opencv.org/2.4/doc/tutorials/features2d/feature_homography/feature_homography.html#feature-homography
+}

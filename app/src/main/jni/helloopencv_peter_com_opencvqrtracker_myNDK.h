@@ -63,6 +63,14 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
 JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching_1test
   (JNIEnv *, jobject, jlong, jlong);
 
+/*
+ * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
+ * Method:    jni_FeatureMatching_test
+ * Signature: (JJ)Z
+ */
+JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureMatching_1test
+  (JNIEnv *, jobject, jlong, jlong);
+
 #ifdef __cplusplus
 }
 #endif

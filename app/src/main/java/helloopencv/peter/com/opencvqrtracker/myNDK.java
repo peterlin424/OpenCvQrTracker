@@ -1,7 +1,5 @@
 package helloopencv.peter.com.opencvqrtracker;
 
-import org.opencv.core.Mat;
-
 /**
  * Created by linweijie on 7/12/16.
  */
@@ -28,6 +26,10 @@ public class myNDK {
 
     public native boolean jni_ImageMatching(long orgImage, long tmpImage);
 
+
+    // 開發測試
     public native double jni_ImageMatching_test(long orgImage, long tmpImage);
+
+    public native boolean jni_FeatureMatching_test(long orgImage, long tmpImage);
 
 }
