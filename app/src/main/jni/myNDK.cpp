@@ -32,7 +32,7 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Fea
 
     //OrbFeatureDetector detector(50);
     OrbFeatureDetector detector;
-    OrbDescriptorExtractor  extractor;
+    OrbDescriptorExtractor extractor;
     detector.detect(*pMatGr, v);
     extractor.compute( *pMatGr, v, *pMatDesc );
     circle(*pMatRgb, Point(100,100), 10, Scalar(5,128,255,255));
@@ -99,10 +99,10 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
     vector<Vec4i> hierarchy;
 
     // 邊緣偵測
-    Canny( dstMat, canny_output, 50, 100, 3 );
+    Canny( dstMat, canny_output, 30, 100, 3 ); // 設定 debug 閥值
     findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
-    // 描繪外框
+   // 描繪外框
 //    RNG rng(12345);
 //    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
     for( int i = 0; i< contours.size(); i++ )
@@ -119,8 +119,8 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 }
 
 // reference http://www.ipol.im/pub/art/2011/llmps-scb/
-void balance_white(cv::Mat mat) {
-    double discard_ratio = 0.05;
+void balance_white(cv::Mat mat, double discard_ratio) {
+
     int hists[3][256];
     memset(hists, 0, 3*256*sizeof(int));
 
@@ -169,12 +169,17 @@ void balance_white(cv::Mat mat) {
 vector<vector<Point> > showMarker;
 
 JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
-        (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages, jint minThreshold, jint maxThreshold, jboolean isThreshold, jboolean isBalanceWhite){
+        (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages,
+         jint minThreshold, jint maxThreshold,
+         jboolean isThreshold, jboolean isBalanceWhite,
+         jdouble whiteBalance){
 
     showMarker.clear();
     Mat* orgMat = (Mat*) orgImage;
 
-    if (isBalanceWhite) balance_white(*orgMat);
+    if (isBalanceWhite) {
+        balance_white(*orgMat, whiteBalance);
+    }
 
     Mat dstMat = *orgMat;
 
@@ -185,8 +190,10 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
     split(dstMat, planes);
 
     // 二值化
+    // TODO CbCr 自適 threshold
     threshold(planes[1], dstMat, minThreshold, maxThreshold, THRESH_BINARY);
     if (isThreshold) *orgMat = dstMat;
+
 
     // 取得輪廓點
     vector< vector<Point> > contours;
@@ -218,6 +225,9 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
         }
     }
 
+    // TODO 還原旋轉
+
+
     // 取得透視結果
     jlong *imagesArrayData = env->GetLongArrayElements(qrImages, 0);
     int arrayLen = env->GetArrayLength(qrImages);
@@ -233,7 +243,7 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
 
         warpPerspective(*orgMat, aftMat, trsMat, aftMat.size(), INTER_LINEAR);
 
-        // todo 抓取 mark 透視結果
+        // TODO 抓取 mark 透視結果
         if (i < arrayLen){
             Mat& matImage = *(Mat*)imagesArrayData[i];
             matImage = aftMat;
@@ -262,7 +272,7 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
     }
 }
 
-JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
+JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
         (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
 
     Mat* orgMat = (Mat*) orgImage;
@@ -272,17 +282,147 @@ JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1
     Size size = Size(orgMat->cols, orgMat->rows);
     resize(*tmpMat, *tmpMat, size, INTER_LINEAR);
 
-    //
-    double out = 0;
-    Mat sub = abs(*orgMat - *tmpMat);
-    for (int i=0; i<orgMat->cols; i++){
-        for (int j = 0; j < orgMat->rows; ++j) {
-            uchar value0 = sub.at<Vec3b>(i,j)[0];
-            uchar value1 = sub.at<Vec3b>(i,j)[1];
-            uchar value2 = sub.at<Vec3b>(i,j)[2];
+    // 灰階
+    Mat gryMat, tmpGryMat;
+    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
+    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
 
-            out = value0 + value1 + value2;
-        }
+    // 模板匹配
+    Mat dstMat;
+    int result_cols =  gryMat.cols - tmpGryMat.cols + 1;
+    int result_rows = gryMat.rows - tmpGryMat.rows + 1;
+    dstMat.create(result_rows, result_cols, CV_8UC1);
+    matchTemplate(gryMat, tmpGryMat, dstMat, TM_SQDIFF_NORMED);
+    gryMat.release();
+    tmpGryMat.release();
+
+    //
+    double min, max;
+    Point minLoc;
+    Point maxLoc;
+    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+    dstMat.release();
+
+//    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
+//    // else top left point = maxLoc
+//    Point topLeft = minLoc;
+//    Point bottomRight = Point(minLoc.x + tmpMat->cols, minLoc.y + tmpMat->rows);
+//    Scalar color = Scalar( 255, 255, 0 );
+//
+//    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
+
+    if (minLoc.x == 0 && minLoc.y == 0 && min < 0.3){
+        return true;
     }
-    return out;
+
+    return false;
+}
+
+string int2str(int &i) {
+    string s;
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
+}
+
+JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching_1test
+        (JNIEnv * env, jobject obj, jlong orgImage, jlong tmpImage){
+
+    Mat* orgMat = (Mat*) orgImage;
+    Mat* tmpMat = (Mat*) tmpImage;
+
+    // Resize tmpImage
+    Size size = Size(orgMat->cols, orgMat->rows);
+    resize(*tmpMat, *tmpMat, size, INTER_LINEAR);
+
+    Mat gryMat, tmpGryMat;
+    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
+    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
+
+    Mat dstMat;
+    int result_cols =  gryMat.cols - tmpGryMat.cols + 1;
+    int result_rows = gryMat.rows - tmpGryMat.rows + 1;
+    dstMat.create(result_rows, result_cols, CV_8UC1);
+
+    matchTemplate(gryMat, tmpGryMat, dstMat, TM_SQDIFF_NORMED);
+    gryMat.release();
+
+    double min, max;
+    Point minLoc;
+    Point maxLoc;
+    minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
+    dstMat.release();
+
+    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
+    // else top left point = maxLoc
+    Point topLeft = minLoc;
+    Point bottomRight = Point(minLoc.x + tmpMat->cols, minLoc.y + tmpMat->rows);
+    Scalar color = Scalar( 255, 255, 0 );
+
+    rectangle( *orgMat, topLeft, bottomRight, color, 5, 8, 0 );
+
+    Point printLoc = Point(minLoc.x + 30, minLoc.y + 30);
+    putText(*orgMat, "minLoc("+ int2str(minLoc.x) +", "+ int2str(minLoc.y) +")", printLoc, FONT_HERSHEY_COMPLEX, 0.5,  Scalar(247,255,46));
+
+    return min;
+}
+
+JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureMatching_1test
+  (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
+
+    bool isCheck = false;
+
+    //-- Step 0: Grayscale
+    Mat* orgMat = (Mat*) orgImage;
+    Mat* tmpMat = (Mat*) tmpImage;
+
+    Mat gryMat, tmpGryMat;
+    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
+    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
+
+    //-- Step 1: setting detector
+    Ptr<FeatureDetector> detector = FeatureDetector::create( "SIFT" );
+    Ptr<DescriptorExtractor> descriptor_extractor = DescriptorExtractor::create( "SIFT" );
+    Ptr<DescriptorMatcher> descriptor_matcher = DescriptorMatcher::create( "BruteForce" );
+    if( detector.empty() || descriptor_extractor.empty() )
+        return isCheck;        // fail to create detector!
+
+    //-- Step 1: Detect the keypoints
+    vector<KeyPoint> sceneKey,matcherKey;
+    detector->detect( gryMat, sceneKey );
+    detector->detect( gryMat, matcherKey );
+
+    circle(*orgMat, Point(100,100), 10, Scalar(5,128,255,255));
+    for( size_t i = 0; i < sceneKey.size(); i++ ) {
+        circle(*orgMat, Point(sceneKey[i].pt.x, sceneKey[i].pt.y), 10, Scalar(255,128,0,255));
+    }
+    circle(*tmpMat, Point(100,100), 10, Scalar(5,128,255,255));
+    for( size_t i = 0; i < matcherKey.size(); i++ ) {
+        circle(*tmpMat, Point(matcherKey[i].pt.x, matcherKey[i].pt.y), 10, Scalar(255,128,0,255));
+    }
+
+    //-- Step 2: Calculate descriptors (feature vectors)
+
+
+  //-- Step 3: Matching descriptor vectors using FLANN matcher
+
+    //-- Quick calculation of max and min distances between keypoints
+
+
+  //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
+
+    //-- Localize the object
+
+
+  //-- Get the corners from the image_1 ( the object to be "detected" )
+
+
+  //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+
+
+  //-- Show detected matches
+
+
+
+  // http://docs.opencv.org/2.4/doc/tutorials/features2d/feature_homography/feature_homography.html#feature-homography
 }

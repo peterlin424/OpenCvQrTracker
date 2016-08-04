@@ -20,16 +20,18 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
         void OnChangeThresholdView(boolean state);
         void OnChangeBalanceWhite(boolean state);
         void OnChangeMinThreshold(int min);
+        void OnChangeWhiteBalance(int wb);
     }
 
     private ViewListener listener;
 
-    private TextView tvTh;
+    private TextView tvTh, tvWb;
     private Button btShow, btTh, btBw;
-    private SeekBar sbTh;
+    private SeekBar sbTh, sbWb;
     private LinearLayout llPanel;
 
     private int minThreshold = 0;
+    private int whiteBalance = 0;
     private boolean isThreshold = false;
     private boolean isBalanceWhite = false;
 
@@ -57,18 +59,23 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
 
     private void initViews(Context context){
 
-        tvTh = (TextView) findViewById(R.id.tv_th);
+        llPanel = (LinearLayout) findViewById(R.id.ll_panel);
         btShow = (Button) findViewById(R.id.bt_show);
+
         btTh = (Button) findViewById(R.id.bt_th);
         btBw = (Button) findViewById(R.id.bt_bw);
+
+        tvTh = (TextView) findViewById(R.id.tv_th);
         sbTh = (SeekBar) findViewById(R.id.sb_th);
-        llPanel = (LinearLayout) findViewById(R.id.ll_panel);
+        tvWb = (TextView) findViewById(R.id.tv_wb);
+        sbWb = (SeekBar) findViewById(R.id.sb_wb);
 
         btShow.setOnClickListener(this);
         btTh.setOnClickListener(this);
         btBw.setOnClickListener(this);
 
         sbTh.setOnSeekBarChangeListener(this);
+        sbWb.setOnSeekBarChangeListener(this);
     }
 
     public void setPanelColor(String color){
@@ -76,10 +83,15 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
     }
     public void setTextColor(String color){
         tvTh.setTextColor(Color.parseColor(color));
+        tvWb.setTextColor(Color.parseColor(color));
     }
     public void setMinThreshold(int min){
         minThreshold = min;
         sbTh.setProgress(min);
+    }
+    public void setWhiteBalance(int wb){
+        whiteBalance = wb;
+        sbWb.setProgress(wb);
     }
     public void setThreshold(boolean state){
         isThreshold = state;
@@ -138,9 +150,18 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
      * */
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-        minThreshold = i;
-        tvTh.setText(String.valueOf(i));
-        listener.OnChangeMinThreshold(i);
+        switch (seekBar.getId()){
+            case R.id.sb_th:
+                minThreshold = i;
+                tvTh.setText(String.valueOf(i));
+                listener.OnChangeMinThreshold(i);
+                break;
+            case R.id.sb_wb:
+                whiteBalance = i;
+                tvWb.setText(String.valueOf(i));
+                listener.OnChangeWhiteBalance(i);
+                break;
+        }
     }
 
     @Override

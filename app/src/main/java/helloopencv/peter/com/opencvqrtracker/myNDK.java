@@ -1,7 +1,5 @@
 package helloopencv.peter.com.opencvqrtracker;
 
-import org.opencv.core.Mat;
-
 /**
  * Created by linweijie on 7/12/16.
  */
@@ -22,9 +20,17 @@ public class myNDK {
     public native void jni_GrayDenoisingThresholdContour(long orgImage);
 
     // QrTracking
-    public native int jni_QrTracking(long orgImage, long[] qrImages, int minThreshold, int maxThreshold, boolean isThreshold, boolean isBalanceWhite);
+    public native int jni_QrTracking(long orgImage, long[] qrImages, int minThreshold, int maxThreshold, boolean isThreshold, boolean isBalanceWhite, double whiteBalance);
 
     public native void jni_QrDrawing(long orgImage, int count, String qrCode);
 
-    public native double jni_ImageMatching(long orgImage, long tmpImage);
+
+    public native boolean jni_ImageMatching(long orgImage, long tmpImage);
+
+
+    // 開發測試
+    public native double jni_ImageMatching_test(long orgImage, long tmpImage);
+
+    public native boolean jni_FeatureMatching_test(long orgImage, long tmpImage);
+
 }

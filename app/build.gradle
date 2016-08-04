@@ -11,7 +11,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        ndk{
+        ndk {
             moduleName "myJNI"
         }
     }
@@ -22,8 +22,8 @@ android {
         }
     }
 
-    sourceSets.main{
-        jni.srcDirs=[]
+    sourceSets.main {
+        jni.srcDirs = []
         jniLibs.srcDir "src/main/jniLibs"
     }
 }
@@ -31,9 +31,10 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
     compile project(':openCVLibrary2411')
+    compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.google.zxing:core:3.0.1'
     compile 'com.journeyapps:zxing-android-legacy:2.0.1@aar'
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
+    compile 'com.android.support:design:24.0.0'
 }
