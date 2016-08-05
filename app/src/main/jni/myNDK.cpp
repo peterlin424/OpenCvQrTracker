@@ -11,111 +11,31 @@
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/contrib/detection_based_tracker.hpp>
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp>
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp>
+#include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/nonfree/nonfree.hpp>
 
 using namespace cv;
 
-JNIEXPORT jstring JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1HelloJni(
-        JNIEnv* env, jobject obj, jstring str){
-    const char* toWhat = env->GetStringUTFChars(str, JNI_FALSE);
-    char hello[80];
-    sprintf(hello,"Hello, %s!", toWhat);
-    return env->NewStringUTF(hello);
+/**
+ * Public function
+ * */
+
+string int2str(int &i) {
+    string s;
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
 }
 
-JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureDetector(
-        JNIEnv* env, jobject obj, jlong addrGray, jlong addrRgba, jlong addrDescriptor){
+void MyFilledCircle( Mat img, Point center, Scalar color ) {
+    int thickness = 3;
+    int lineType = 8;
 
-    Mat* pMatGr=(Mat*)addrGray;
-    Mat* pMatRgb=(Mat*)addrRgba;
-    Mat* pMatDesc=(Mat*)addrDescriptor;
-    vector<KeyPoint> v;
-
-    //OrbFeatureDetector detector(50);
-    OrbFeatureDetector detector;
-    OrbDescriptorExtractor extractor;
-    detector.detect(*pMatGr, v);
-    extractor.compute( *pMatGr, v, *pMatDesc );
-    circle(*pMatRgb, Point(100,100), 10, Scalar(5,128,255,255));
-    for( size_t i = 0; i < v.size(); i++ ) {
-        circle(*pMatRgb, Point(v[i].pt.x, v[i].pt.y), 10, Scalar(255,128,0,255));
-    }
-}
-
-int DELAY_CAPTION = 1500;
-int DELAY_BLUR = 100;
-int MAX_KERNEL_LENGTH = 11;
-int THRESHOLD = 25;
-int THRESHOLD_MAX = 255;
-
-JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1GrayDenoisingThresholdContour
-        (JNIEnv * env, jobject obj, jlong orgImage){
-
-    Mat* orgMat = (Mat*) orgImage;
-    Mat dstMat = *orgMat;
-//    Mat* gryMat = (Mat*) gryImage;
-
-    // --------
-    // 1.灰階
-    // --------
-    cvtColor(dstMat, dstMat, CV_BGR2GRAY);
-
-    // --------
-    // 2.去雜訊
-    // --------
-    // Homogeneous blur
-//    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-//    {
-//        blur( *gryMat, *gryMat, Size( i, i ), Point(-1,-1) );
-//    }
-
-    // Gaussian blur
-    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-    {
-        GaussianBlur( dstMat, dstMat, Size( i, i ), 0, 0 );
-    }
-
-    // Median blur
-//    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-//    {
-//        medianBlur ( *orgMat, *orgMat, i );
-//    }
-
-    // Bilateral Filter
-//    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
-//    {
-//        bilateralFilter ( *orgMat, *orgMat, i, i*2, i/2 );
-//    }
-
-    // --------
-    // 3.二值化
-    // --------
-    threshold( dstMat, dstMat, THRESHOLD, THRESHOLD_MAX, THRESH_BINARY );
-
-    // --------
-    // 4.邊緣偵測與尋找輪廓
-    // --------
-    Mat canny_output;
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-
-    // 邊緣偵測
-    Canny( dstMat, canny_output, 30, 100, 3 ); // 設定 debug 閥值
-    findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
-
-   // 描繪外框
-//    RNG rng(12345);
-//    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
-    for( int i = 0; i< contours.size(); i++ )
-    {
-//        Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-        Scalar color = Scalar( 255, 255, 255 );
-        drawContours( *orgMat, contours, i, color, 2, 8, hierarchy, 0, Point() );
-    }
-
-//    *orgMat = drawing;
-
-    canny_output.release();
-//    drawing.release();
+    circle( img,
+            center,
+            20,
+            color,
+            thickness,
+            lineType );
 }
 
 // reference http://www.ipol.im/pub/art/2011/llmps-scb/
@@ -165,6 +85,14 @@ void balance_white(cv::Mat mat, double discard_ratio) {
         }
     }
 }
+
+
+
+
+
+/**
+ * Demo function
+ * */
 
 vector<vector<Point> > showMarker;
 
@@ -318,11 +246,117 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     return false;
 }
 
-string int2str(int &i) {
-    string s;
-    std::stringstream ss;
-    ss << i;
-    return ss.str();
+
+
+
+
+
+/**
+ * Testing function
+ * */
+
+JNIEXPORT jstring JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1HelloJni(
+        JNIEnv* env, jobject obj, jstring str){
+    const char* toWhat = env->GetStringUTFChars(str, JNI_FALSE);
+    char hello[80];
+    sprintf(hello,"Hello, %s!", toWhat);
+    return env->NewStringUTF(hello);
+}
+
+JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureDetector(
+        JNIEnv* env, jobject obj, jlong addrGray, jlong addrRgba, jlong addrDescriptor){
+
+    Mat* pMatGr=(Mat*)addrGray;
+    Mat* pMatRgb=(Mat*)addrRgba;
+    Mat* pMatDesc=(Mat*)addrDescriptor;
+    vector<KeyPoint> v;
+
+    //OrbFeatureDetector detector(50);
+    OrbFeatureDetector detector;
+    OrbDescriptorExtractor extractor;
+    detector.detect(*pMatGr, v);
+    extractor.compute( *pMatGr, v, *pMatDesc );
+    circle(*pMatRgb, Point(100,100), 10, Scalar(5,128,255,255));
+    for( size_t i = 0; i < v.size(); i++ ) {
+        circle(*pMatRgb, Point(v[i].pt.x, v[i].pt.y), 10, Scalar(255,128,0,255));
+    }
+}
+
+int DELAY_CAPTION = 1500;
+int DELAY_BLUR = 100;
+int MAX_KERNEL_LENGTH = 11;
+int THRESHOLD = 25;
+int THRESHOLD_MAX = 255;
+
+JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1GrayDenoisingThresholdContour
+        (JNIEnv * env, jobject obj, jlong orgImage){
+
+    Mat* orgMat = (Mat*) orgImage;
+    Mat dstMat = *orgMat;
+//    Mat* gryMat = (Mat*) gryImage;
+
+    // --------
+    // 1.灰階
+    // --------
+    cvtColor(dstMat, dstMat, CV_BGR2GRAY);
+
+    // --------
+    // 2.去雜訊
+    // --------
+    // Homogeneous blur
+//    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+//    {
+//        blur( *gryMat, *gryMat, Size( i, i ), Point(-1,-1) );
+//    }
+
+    // Gaussian blur
+    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+    {
+        GaussianBlur( dstMat, dstMat, Size( i, i ), 0, 0 );
+    }
+
+    // Median blur
+//    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+//    {
+//        medianBlur ( *orgMat, *orgMat, i );
+//    }
+
+    // Bilateral Filter
+//    for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+//    {
+//        bilateralFilter ( *orgMat, *orgMat, i, i*2, i/2 );
+//    }
+
+    // --------
+    // 3.二值化
+    // --------
+    threshold( dstMat, dstMat, THRESHOLD, THRESHOLD_MAX, THRESH_BINARY );
+
+    // --------
+    // 4.邊緣偵測與尋找輪廓
+    // --------
+    Mat canny_output;
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+
+    // 邊緣偵測
+    Canny( dstMat, canny_output, 30, 100, 3 ); // 設定 debug 閥值
+    findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
+
+   // 描繪外框
+//    RNG rng(12345);
+//    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
+    for( int i = 0; i< contours.size(); i++ )
+    {
+//        Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+        Scalar color = Scalar( 255, 255, 255 );
+        drawContours( *orgMat, contours, i, color, 2, 8, hierarchy, 0, Point() );
+    }
+
+//    *orgMat = drawing;
+
+    canny_output.release();
+//    drawing.release();
 }
 
 JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching_1test
@@ -368,61 +402,113 @@ JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1
 }
 
 JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureMatching_1test
-  (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
+  (JNIEnv *env, jobject obj, jlong objImage, jlong sceneImage, jlong matchImage){
 
     bool isCheck = false;
 
     //-- Step 0: Grayscale
-    Mat* orgMat = (Mat*) orgImage;
-    Mat* tmpMat = (Mat*) tmpImage;
+    Mat* objMat = (Mat*) objImage;
+    Mat* sceneMat = (Mat*) sceneImage;
+    Mat* matchMat = (Mat*) matchImage;
 
-    Mat gryMat, tmpGryMat;
-    cvtColor(*orgMat, gryMat, CV_BGR2GRAY);
-    cvtColor(*tmpMat, tmpGryMat, CV_BGR2GRAY);
+    Mat objGryMat, sceneGryMat;
+    cvtColor(*objMat, objGryMat, CV_BGR2GRAY);
+    cvtColor(*sceneMat, sceneGryMat, CV_BGR2GRAY);
 
-    //-- Step 1: setting detector
-    Ptr<FeatureDetector> detector = FeatureDetector::create( "SIFT" );
-    Ptr<DescriptorExtractor> descriptor_extractor = DescriptorExtractor::create( "SIFT" );
-    Ptr<DescriptorMatcher> descriptor_matcher = DescriptorMatcher::create( "BruteForce" );
-    if( detector.empty() || descriptor_extractor.empty() )
-        return isCheck;        // fail to create detector!
+    //-- Step 1: setting Detector and Detect the keypoints
+    vector<KeyPoint> objKey, sceneKey;
 
-    //-- Step 1: Detect the keypoints
-    vector<KeyPoint> sceneKey,matcherKey;
-    detector->detect( gryMat, sceneKey );
-    detector->detect( gryMat, matcherKey );
+    OrbFeatureDetector detector;
+    detector.detect(objGryMat, objKey);
+    detector.detect(sceneGryMat, sceneKey);
 
-    circle(*orgMat, Point(100,100), 10, Scalar(5,128,255,255));
-    for( size_t i = 0; i < sceneKey.size(); i++ ) {
-        circle(*orgMat, Point(sceneKey[i].pt.x, sceneKey[i].pt.y), 10, Scalar(255,128,0,255));
-    }
-    circle(*tmpMat, Point(100,100), 10, Scalar(5,128,255,255));
-    for( size_t i = 0; i < matcherKey.size(); i++ ) {
-        circle(*tmpMat, Point(matcherKey[i].pt.x, matcherKey[i].pt.y), 10, Scalar(255,128,0,255));
-    }
+//    RNG rng(12345);
+//    circle(*objMat, Point(100,100), 20,
+//           Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+//    for( int i = 0; i < objKey.size(); i++ ) {
+//        MyFilledCircle(*objMat, Point(objKey[i].pt.x, objKey[i].pt.y),
+//                       Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+//    }
+//    circle(*sceneMat, Point(100,100), 20,
+//           Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+//    for( int i = 0; i < sceneKey.size(); i++ ) {
+//        MyFilledCircle(*sceneMat, Point(sceneKey[i].pt.x, sceneKey[i].pt.y),
+//                       Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+//    }
 
     //-- Step 2: Calculate descriptors (feature vectors)
+    Mat objDMat, sceneDMat;
 
+    OrbDescriptorExtractor extractor;
+    extractor.compute( objGryMat, objKey, objDMat );
+    extractor.compute( sceneGryMat, sceneKey, sceneDMat );
 
-  //-- Step 3: Matching descriptor vectors using FLANN matcher
+    if (objDMat.empty() || sceneDMat.empty()) return isCheck;
+
+    isCheck = true;
+
+    if (objDMat.type()!=CV_32F) objDMat.convertTo(objDMat, CV_32F);
+    if (sceneDMat.type()!=CV_32F) sceneDMat.convertTo(sceneDMat, CV_32F);
+
+    //-- Step 3: Matching descriptor vectors using FLANN matcher
+    FlannBasedMatcher matcher;
+    vector< DMatch > matches;
+    matcher.match( objDMat, sceneDMat, matches );
+
+    double max_dist = 0; double min_dist = 100;
 
     //-- Quick calculation of max and min distances between keypoints
+    for( int i = 0; i < objDMat.rows; i++ )
+    { double dist = matches[i].distance;
+        if( dist < min_dist ) min_dist = dist;
+        if( dist > max_dist ) max_dist = dist;
+    }
 
+    //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
+    vector< DMatch > good_matches;
 
-  //-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
+    for( int i = 0; i < objDMat.rows; i++ )
+    { if( matches[i].distance < 3*min_dist )
+        { good_matches.push_back( matches[i]); }
+    }
+
+    Mat img_matches;
+    RNG rng(12345);
+
+    drawMatches( *objMat, objKey, *sceneMat, sceneKey,
+                 good_matches, img_matches,
+                 Scalar::all(-1), Scalar::all(-1),
+                 vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
     //-- Localize the object
+//    vector<Point2f> obj;
+//    vector<Point2f> scene;
+//
+//    for( int i = 0; i < good_matches.size(); i++ )
+//    {
+//        //-- Get the keypoints from the good matches
+//        obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
+//        scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+//    }
+//
+//    Mat H = findHomography( obj, scene, CV_RANSAC );
+
+    //-- Get the corners from the image_1 ( the object to be "detected" )
 
 
-  //-- Get the corners from the image_1 ( the object to be "detected" )
+    //-- Draw lines between the corners (the mapped object in the scene - image_2 )
 
 
-  //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+    //-- Show detected matches
 
 
-  //-- Show detected matches
+    // Resize tmpImage
+    Size size = Size(matchMat->cols, matchMat->rows);
+    resize(img_matches, img_matches, size, INTER_LINEAR);
+    *matchMat = img_matches;
 
-
-
-  // http://docs.opencv.org/2.4/doc/tutorials/features2d/feature_homography/feature_homography.html#feature-homography
+    // http://docs.opencv.org/2.4/doc/tutorials/features2d/feature_homography/feature_homography.html#feature-homography
+    // http://docs.opencv.org/2.4/doc/tutorials/features2d/feature_flann_matcher/feature_flann_matcher.html
+    // http://stackoverflow.com/questions/29472959/orb-giving-better-feature-matching-than-sift-why
+    return isCheck;
 }

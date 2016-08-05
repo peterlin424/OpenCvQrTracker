@@ -31,6 +31,6 @@ public class myNDK {
     // 開發測試
     public native double jni_ImageMatching_test(long orgImage, long tmpImage);
 
-    public native boolean jni_FeatureMatching_test(long orgImage, long tmpImage);
+    public native boolean jni_FeatureMatching_test(long objImage, long sceneImage, long matchImage);
 
 }
