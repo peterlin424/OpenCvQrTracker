@@ -203,6 +203,9 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
 JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
         (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
 
+    if (orgImage == 0 || tmpImage == 0)
+        return false;
+
     Mat* orgMat = (Mat*) orgImage;
     Mat* tmpMat = (Mat*) tmpImage;
 
@@ -239,7 +242,7 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
 //
 //    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
 
-    if (minLoc.x == 0 && minLoc.y == 0 && min < 0.3){
+    if (minLoc.x == 0 && minLoc.y == 0 && min < 0.25){
         return true;
     }
 

@@ -56,7 +56,7 @@ public class QrTrackerActivity extends Activity {
     };
 
     private Mat mRgba;
-    private Mat[] matcher = new Mat[3];
+    private Mat[][] matcher = new Mat[5][2];
     private int maxSize = 10;
     private QrItem[] qrItems = new QrItem[maxSize];
     private int minThreshold = 131;
@@ -115,17 +115,35 @@ public class QrTrackerActivity extends Activity {
                     code = QrHelper.getReult(bitmap);
                 } catch (Exception e){
                     e.printStackTrace();
+
+                    Mat bpMat = new Mat();
+                    Utils.bitmapToMat(bitmap, bpMat);
+
+                    boolean[] isMatch1 = {false, false};
+                    isMatch1[0] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][0].getNativeObjAddr());
+                    isMatch1[1] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][1].getNativeObjAddr());
+                    if (isMatch1[0]||isMatch1[1]) code = "matcher1";
+
+//                    boolean[] isMatch2 = {false, false};
+//                    isMatch2[0] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][0].getNativeObjAddr());
+//                    isMatch2[1] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][1].getNativeObjAddr());
+//                    if (isMatch2[0]||isMatch2[1]) code = "matcher2";
+//
+//                    boolean[] isMatch3 = {false, false};
+//                    isMatch3[0] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][0].getNativeObjAddr());
+//                    isMatch3[1] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][1].getNativeObjAddr());
+//                    if (isMatch3[0]||isMatch3[1]) code = "matcher3";
+
+                    boolean[] isMatch4 = {false, false};
+                    isMatch4[0] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][0].getNativeObjAddr());
+                    isMatch4[1] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][1].getNativeObjAddr());
+                    if (isMatch4[0]||isMatch4[1]) code = "matcher4";
+
+                    boolean[] isMatch5 = {false, false};
+                    isMatch5[0] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][0].getNativeObjAddr());
+                    isMatch5[1] = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][1].getNativeObjAddr());
+                    if (isMatch5[0]||isMatch5[1]) code = "matcher5";
                 }
-
-                Mat bpMat = new Mat();
-                Utils.bitmapToMat(bitmap, bpMat);
-
-                boolean isMatch = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].getNativeObjAddr());
-                if (isMatch) code = "matcher1";
-                boolean isMatch2 = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1].getNativeObjAddr());
-                if (isMatch2) code = "matcher2";
-                boolean isMatch3 = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2].getNativeObjAddr());
-                if (isMatch3) code = "matcher3";
 
                 if (code.equals(""))
                     continue;
@@ -268,17 +286,40 @@ public class QrTrackerActivity extends Activity {
         paint.setColor(Color.BLACK);  //設定字體顏色
 
         //
-        Bitmap mbp = BitmapFactory.decodeResource(getResources(), R.drawable.input1_1);
-        matcher[0] = new Mat(mbp.getHeight(), mbp.getWidth(), CvType.CV_8UC1, new Scalar(4));
-        Utils.bitmapToMat(mbp, matcher[0]);
+        Bitmap mbp1_1 = BitmapFactory.decodeResource(getResources(), R.drawable.input1_1);
+        Bitmap mbp1_2 = BitmapFactory.decodeResource(getResources(), R.drawable.input1_2);
+        matcher[0][0] = new Mat(mbp1_1.getHeight(), mbp1_1.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        matcher[0][1] = new Mat(mbp1_2.getHeight(), mbp1_2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        Utils.bitmapToMat(mbp1_1, matcher[0][0]);
+        Utils.bitmapToMat(mbp1_2, matcher[0][1]);
 
-        Bitmap mbp2 = BitmapFactory.decodeResource(getResources(), R.drawable.input1_2);
-        matcher[1] = new Mat(mbp2.getHeight(), mbp2.getWidth(), CvType.CV_8UC1, new Scalar(4));
-        Utils.bitmapToMat(mbp2, matcher[1]);
+//        Bitmap mbp2_1 = BitmapFactory.decodeResource(getResources(), R.drawable.input2_1);
+//        Bitmap mbp2_2 = BitmapFactory.decodeResource(getResources(), R.drawable.input2_2);
+//        matcher[1][0] = new Mat(mbp2_1.getHeight(), mbp2_1.getWidth(), CvType.CV_8UC1, new Scalar(4));
+//        matcher[1][1] = new Mat(mbp2_2.getHeight(), mbp2_2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+//        Utils.bitmapToMat(mbp2_1, matcher[1][0]);
+//        Utils.bitmapToMat(mbp2_2, matcher[1][1]);
+//
+//        Bitmap mbp3_1 = BitmapFactory.decodeResource(getResources(), R.drawable.input3_1);
+//        Bitmap mbp3_2 = BitmapFactory.decodeResource(getResources(), R.drawable.input3_2);
+//        matcher[2][0] = new Mat(mbp3_1.getHeight(), mbp3_1.getWidth(), CvType.CV_8UC1, new Scalar(4));
+//        matcher[2][1] = new Mat(mbp3_2.getHeight(), mbp3_2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+//        Utils.bitmapToMat(mbp3_1, matcher[2][0]);
+//        Utils.bitmapToMat(mbp3_2, matcher[2][1]);
 
-        Bitmap mbp3 = BitmapFactory.decodeResource(getResources(), R.drawable.input1_3);
-        matcher[2] = new Mat(mbp3.getHeight(), mbp3.getWidth(), CvType.CV_8UC1, new Scalar(4));
-        Utils.bitmapToMat(mbp3, matcher[2]);
+        Bitmap mbp4_1 = BitmapFactory.decodeResource(getResources(), R.drawable.input4_1);
+        Bitmap mbp4_2 = BitmapFactory.decodeResource(getResources(), R.drawable.input4_2);
+        matcher[3][0] = new Mat(mbp4_1.getHeight(), mbp4_1.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        matcher[3][1] = new Mat(mbp4_2.getHeight(), mbp4_2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        Utils.bitmapToMat(mbp4_1, matcher[3][0]);
+        Utils.bitmapToMat(mbp4_2, matcher[3][1]);
+
+        Bitmap mbp5_1 = BitmapFactory.decodeResource(getResources(), R.drawable.input5_1);
+        Bitmap mbp5_2 = BitmapFactory.decodeResource(getResources(), R.drawable.input5_2);
+        matcher[4][0] = new Mat(mbp5_1.getHeight(), mbp5_1.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        matcher[4][1] = new Mat(mbp5_2.getHeight(), mbp5_2.getWidth(), CvType.CV_8UC1, new Scalar(4));
+        Utils.bitmapToMat(mbp5_1, matcher[4][0]);
+        Utils.bitmapToMat(mbp5_2, matcher[4][1]);
     }
 
     @Override
