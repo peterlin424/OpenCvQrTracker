@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.opencv.android.Utils;
@@ -26,10 +27,13 @@ public class TestActivity extends Activity {
     private ImageView ivOrg, ivRes;
     private Bitmap orgBp, resBp;
 
-    private ImageView ivTmp;
+//    private ImageView ivTmp;
 //    private TextView tvMin;
     private Bitmap tmpBp;
 //    double min = 0.0f;
+
+    private int flnnMin = 100;
+    private int flnnMax = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +55,7 @@ public class TestActivity extends Activity {
         Mat matchMat = new Mat(tmpBp.getWidth(), tmpBp.getHeight(), CvType.CV_8UC1);
         Utils.bitmapToMat(tmpBp, matchMat);
 
-        boolean isMatch = ndk.jni_FeatureMatching_test(objMat.getNativeObjAddr(), sceneMat.getNativeObjAddr(), matchMat.getNativeObjAddr());
+        boolean isMatch = ndk.jni_FeatureMatching_test(objMat.getNativeObjAddr(), sceneMat.getNativeObjAddr(), matchMat.getNativeObjAddr(), flnnMin, flnnMax, 5);
         String matchRes = "False";
         if (isMatch) matchRes = "True";
         Log.d(LOGTAG, "MatchResult : " + matchRes);
@@ -62,7 +66,7 @@ public class TestActivity extends Activity {
 
         ivOrg.setImageBitmap(orgBp);
         ivRes.setImageBitmap(resBp);
-        ivTmp.setImageBitmap(tmpBp);
+//        ivTmp.setImageBitmap(tmpBp);
     }
 
 //    private void patternMatch(){
@@ -81,12 +85,12 @@ public class TestActivity extends Activity {
 //    }
 
     private void setBitmap() {
-        orgBp = BitmapFactory.decodeResource(getResources(), R.drawable.input1_1);
-        resBp = BitmapFactory.decodeResource(getResources(), R.drawable.simulate_input2);
+        orgBp = BitmapFactory.decodeResource(getResources(), R.drawable.input1_2);
+        resBp = BitmapFactory.decodeResource(getResources(), R.drawable.input1_1);
         tmpBp = BitmapFactory.decodeResource(getResources(), R.drawable.opencv_logo_white);
 
         ivOrg.setImageBitmap(orgBp);
-        ivTmp.setImageBitmap(tmpBp);
+//        ivTmp.setImageBitmap(tmpBp);
     }
 
     private void initLayouts() {
@@ -115,11 +119,13 @@ public class TestActivity extends Activity {
         RelativeLayout rl = new RelativeLayout(this);
         rl.setLayoutParams(
                 new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        ivTmp = new ImageView(this);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(400, 400);
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        ivTmp.setLayoutParams(params);
+
+//        ivTmp = new ImageView(this);
+//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(400, 400);
+//        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+//        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+//        ivTmp.setLayoutParams(params);
+
 //        tvMin = new TextView(this);
 //        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 //        params2.addRule(RelativeLayout.ALIGN_PARENT_TOP);
@@ -127,8 +133,54 @@ public class TestActivity extends Activity {
 //        tvMin.setLayoutParams(params2);
 //        tvMin.setTextColor(Color.parseColor("#ff0000"));
 
-        rl.addView(ivTmp);
+        SeekBar.OnSeekBarChangeListener listener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                if (orgBp==null || resBp==null || tmpBp==null || seekBar.getTag() == null)
+                    return;
+
+                switch ((String)seekBar.getTag()){
+                    case "Min" :
+                        flnnMin = i;
+                        break;
+                    case "Max" :
+                        flnnMax = i;
+                        break;
+                }
+
+                featureMatch();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        };
+
+        SeekBar sbflnnMin = new SeekBar(this);
+        RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(300, 150);
+        params1.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params1.setMargins(0, 0, 0, 150);
+        sbflnnMin.setTag("Min");
+        sbflnnMin.setLayoutParams(params1);
+        sbflnnMin.setOnSeekBarChangeListener(listener);
+        sbflnnMin.setMax(500);
+        sbflnnMin.setProgress(flnnMin);
+
+        SeekBar sbflnnMax = new SeekBar(this);
+        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(300, 150);
+        params2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        sbflnnMin.setTag("Max");
+        sbflnnMax.setLayoutParams(params2);
+        sbflnnMax.setOnSeekBarChangeListener(listener);
+        sbflnnMax.setMax(500);
+        sbflnnMin.setProgress(flnnMax);
+
+//        rl.addView(ivTmp);
 //        rl.addView(tvMin);
+        rl.addView(sbflnnMin);
+        rl.addView(sbflnnMax);
         fl.addView(rl);
 
         //

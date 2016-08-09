@@ -13,6 +13,8 @@
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp>
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/nonfree/nonfree.hpp>
 
+#include "opencv2/calib3d/calib3d.hpp"
+
 using namespace cv;
 
 /**
@@ -405,7 +407,7 @@ JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1
 }
 
 JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1FeatureMatching_1test
-  (JNIEnv *env, jobject obj, jlong objImage, jlong sceneImage, jlong matchImage){
+  (JNIEnv *env, jobject obj, jlong objImage, jlong sceneImage, jlong matchImage, jint flnMin, jint flnMax, jint debugTextSize){
 
     bool isCheck = false;
 
@@ -425,19 +427,19 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     detector.detect(objGryMat, objKey);
     detector.detect(sceneGryMat, sceneKey);
 
-//    RNG rng(12345);
-//    circle(*objMat, Point(100,100), 20,
-//           Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
-//    for( int i = 0; i < objKey.size(); i++ ) {
-//        MyFilledCircle(*objMat, Point(objKey[i].pt.x, objKey[i].pt.y),
-//                       Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
-//    }
-//    circle(*sceneMat, Point(100,100), 20,
-//           Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
-//    for( int i = 0; i < sceneKey.size(); i++ ) {
-//        MyFilledCircle(*sceneMat, Point(sceneKey[i].pt.x, sceneKey[i].pt.y),
-//                       Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
-//    }
+    RNG rng(12345);
+    circle(*objMat, Point(100,100), 20,
+           Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+    for( int i = 0; i < objKey.size(); i++ ) {
+        MyFilledCircle(*objMat, Point(objKey[i].pt.x, objKey[i].pt.y),
+                       Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+    }
+    circle(*sceneMat, Point(100,100), 20,
+           Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+    for( int i = 0; i < sceneKey.size(); i++ ) {
+        MyFilledCircle(*sceneMat, Point(sceneKey[i].pt.x, sceneKey[i].pt.y),
+                       Scalar(rng.uniform(0,255), rng.uniform(0, 255), rng.uniform(0, 255)));
+    }
 
     //-- Step 2: Calculate descriptors (feature vectors)
     Mat objDMat, sceneDMat;
@@ -458,7 +460,7 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     vector< DMatch > matches;
     matcher.match( objDMat, sceneDMat, matches );
 
-    double max_dist = 0; double min_dist = 100;
+    double max_dist = flnMax; double min_dist = flnMin;
 
     //-- Quick calculation of max and min distances between keypoints
     for( int i = 0; i < objDMat.rows; i++ )
@@ -476,34 +478,55 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     }
 
     Mat img_matches;
-    RNG rng(12345);
 
+//    RNG rng(12345);
     drawMatches( *objMat, objKey, *sceneMat, sceneKey,
                  good_matches, img_matches,
                  Scalar::all(-1), Scalar::all(-1),
                  vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
+    int matchCount = good_matches.size();
+    putText(*sceneMat, "mpSize : " + int2str(matchCount), Point(200, 200), FONT_HERSHEY_PLAIN, debugTextSize,  Scalar(247,255,46), 15);
+    if (good_matches.size()<=4)
+        return false;
+
     //-- Localize the object
-//    vector<Point2f> obj;
-//    vector<Point2f> scene;
-//
-//    for( int i = 0; i < good_matches.size(); i++ )
-//    {
-//        //-- Get the keypoints from the good matches
-//        obj.push_back( keypoints_object[ good_matches[i].queryIdx ].pt );
-//        scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
-//    }
-//
-//    Mat H = findHomography( obj, scene, CV_RANSAC );
+    vector<Point2f> obj_point;
+    vector<Point2f> scene_point;
+
+    for( int i = 0; i < good_matches.size(); i++ )
+    {
+        //-- Get the keypoints from the good matches
+        obj_point.push_back( objKey[ good_matches[i].queryIdx ].pt );
+        scene_point.push_back( sceneKey[ good_matches[i].trainIdx ].pt );
+    }
+
+    Mat H = findHomography( obj_point, scene_point, CV_RANSAC );
 
     //-- Get the corners from the image_1 ( the object to be "detected" )
+    vector<Point2f> obj_corners(4);
+    obj_corners[0] = Point(0,0);
+    obj_corners[1] = Point( objMat->cols, 0 );
+    obj_corners[2] = Point( objMat->cols, objMat->rows );
+    obj_corners[3] = Point( 0, objMat->rows );
 
+    vector<Point2f> scene_corners(4);
+    perspectiveTransform( obj_corners, scene_corners, H);
 
     //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+//    line( img_matches, scene_corners[0] + Point2f( objMat->cols, 0), scene_corners[1] + Point2f( objMat->cols, 0), Scalar(0, 255, 0), 40, 8 );
+//    line( img_matches, scene_corners[1] + Point2f( objMat->cols, 0), scene_corners[2] + Point2f( objMat->cols, 0), Scalar( 0, 255, 0), 40, 8 );
+//    line( img_matches, scene_corners[2] + Point2f( objMat->cols, 0), scene_corners[3] + Point2f( objMat->cols, 0), Scalar( 0, 255, 0), 40, 8 );
+//    line( img_matches, scene_corners[3] + Point2f( objMat->cols, 0), scene_corners[0] + Point2f( objMat->cols, 0), Scalar( 0, 255, 0), 40, 8 );
+
+    line( *sceneMat, scene_corners[0] + Point2f( objMat->cols, 0), scene_corners[1] + Point2f( objMat->cols, 0), Scalar(0, 255, 0), 40, 8 );
+    line( *sceneMat, scene_corners[1] + Point2f( objMat->cols, 0), scene_corners[2] + Point2f( objMat->cols, 0), Scalar( 0, 255, 0), 40, 8 );
+    line( *sceneMat, scene_corners[2] + Point2f( objMat->cols, 0), scene_corners[3] + Point2f( objMat->cols, 0), Scalar( 0, 255, 0), 40, 8 );
+    line( *sceneMat, scene_corners[3] + Point2f( objMat->cols, 0), scene_corners[0] + Point2f( objMat->cols, 0), Scalar( 0, 255, 0), 40, 8 );
+
 
 
     //-- Show detected matches
-
 
     // Resize tmpImage
     Size size = Size(matchMat->cols, matchMat->rows);
