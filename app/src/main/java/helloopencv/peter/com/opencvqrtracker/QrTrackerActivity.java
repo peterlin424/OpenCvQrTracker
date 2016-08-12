@@ -119,27 +119,17 @@ public class QrTrackerActivity extends Activity {
                     Mat bpMat = new Mat();
                     Utils.bitmapToMat(bitmap, bpMat);
 
-                    double min = 0;
-                    min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].addr);
-                    Log.d(TAG, "min : " + String.valueOf(min));
-                    if (matcher[0].matching(min)) code = "matcher1";
-
-                    min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1].addr);
-                    Log.d(TAG, "min : " + String.valueOf(min));
-                    if (matcher[1].matching(min)) code = "matcher2";
-
-                    min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2].addr);
-                    Log.d(TAG, "min : " + String.valueOf(min));
-                    if (matcher[2].matching(min)) code = "matcher3";
-
-                    min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3].addr);
-                    Log.d(TAG, "min : " + String.valueOf(min));
-                    if (matcher[3].matching(min)) code = "matcher4";
-
-                    min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4].addr);
-                    Log.d(TAG, "min : " + String.valueOf(min));
-                    if (matcher[4].matching(min)) code = "matcher5";
-
+                    if (matcher[0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].addr)))
+                        code = "matcher1";
+                    else if (matcher[1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1].addr)))
+                        code = "matcher2";
+                    else if (matcher[2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2].addr)))
+                        code = "matcher3";
+                    else if (matcher[3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3].addr)))
+                        code = "matcher4";
+                    else if (matcher[4].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4].addr)))
+                        code = "matcher5";
+                    
 //                    code = String.valueOf(min);
                 }
 
