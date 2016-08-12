@@ -22,5 +22,6 @@ public class QrItem {
 
         infoPos[0] = x+90;
         infoPos[1] = y+45;
+
     }
 }

@@ -27,7 +27,12 @@ string int2str(int &i) {
     ss << i;
     return ss.str();
 }
-
+string double2str(double &i){
+    string s;
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
+}
 void MyFilledCircle( Mat img, Point center, Scalar color ) {
     int thickness = 3;
     int lineType = 8;
@@ -202,11 +207,12 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
     }
 }
 
-JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
+//TODO
+JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
         (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
 
     if (orgImage == 0 || tmpImage == 0)
-        return false;
+        return 0;
 
     Mat* orgMat = (Mat*) orgImage;
     Mat* tmpMat = (Mat*) tmpImage;
@@ -236,19 +242,7 @@ JNIEXPORT jboolean JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_
     minMaxLoc(dstMat, &min, &max, &minLoc, &maxLoc, Mat());
     dstMat.release();
 
-//    // if method is SQDIFF or SQDIFF_NORMED, top left point = minLoc
-//    // else top left point = maxLoc
-//    Point topLeft = minLoc;
-//    Point bottomRight = Point(minLoc.x + tmpMat->cols, minLoc.y + tmpMat->rows);
-//    Scalar color = Scalar( 255, 255, 0 );
-//
-//    rectangle( *orgMat, minLoc, bottomRight, color, 2, 8, 0 );
-
-    if (minLoc.x == 0 && minLoc.y == 0 && min < 0.25){
-        return true;
-    }
-
-    return false;
+    return min;
 }
 
 

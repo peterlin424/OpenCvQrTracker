@@ -1,4 +1,4 @@
-package helloopencv.peter.com.opencvqrtracker;
+package helloopencv.peter.com.opencvqrtracker.Testing;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -18,7 +18,10 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-public class TestActivity extends Activity {
+import helloopencv.peter.com.opencvqrtracker.R;
+import helloopencv.peter.com.opencvqrtracker.myNDK;
+
+public class FeatureMatchingActivity extends Activity {
 
     private String LOGTAG = "TestActivity";
 
@@ -27,12 +30,9 @@ public class TestActivity extends Activity {
     private ImageView ivOrg, ivRes;
     private Bitmap orgBp, resBp;
 
-//    private ImageView ivTmp;
-//    private TextView tvMin;
     private Bitmap tmpBp;
-//    double min = 0.0f;
 
-    private int flnnMin = 100;
+    private int flnnMin = 200;
     private int flnnMax = 0;
 
     @Override
@@ -42,7 +42,6 @@ public class TestActivity extends Activity {
 
         initLayouts();
         setBitmap();
-//        patternMatch();
         featureMatch();
 
     }
@@ -66,23 +65,7 @@ public class TestActivity extends Activity {
 
         ivOrg.setImageBitmap(orgBp);
         ivRes.setImageBitmap(resBp);
-//        ivTmp.setImageBitmap(tmpBp);
     }
-
-//    private void patternMatch(){
-//
-//        Mat resMat = new Mat (resBp.getWidth(), resBp.getHeight(), CvType.CV_8UC1);
-//        Utils.bitmapToMat(resBp, resMat);
-//
-//        Mat tmpMat = new Mat (tmpBp.getWidth(), tmpBp.getHeight(), CvType.CV_8UC1);
-//        Utils.bitmapToMat(tmpBp, tmpMat);
-//
-//        min = ndk.jni_ImageMatching_test(resMat.getNativeObjAddr(), tmpMat.getNativeObjAddr());
-//        Utils.matToBitmap(resMat, resBp);
-//
-//        ivRes.setImageBitmap(resBp);
-//        tvMin.setText(String.valueOf(min));
-//    }
 
     private void setBitmap() {
         orgBp = BitmapFactory.decodeResource(getResources(), R.drawable.input1_2);
@@ -90,7 +73,6 @@ public class TestActivity extends Activity {
         tmpBp = BitmapFactory.decodeResource(getResources(), R.drawable.opencv_logo_white);
 
         ivOrg.setImageBitmap(orgBp);
-//        ivTmp.setImageBitmap(tmpBp);
     }
 
     private void initLayouts() {
@@ -120,67 +102,6 @@ public class TestActivity extends Activity {
         rl.setLayoutParams(
                 new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-//        ivTmp = new ImageView(this);
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(400, 400);
-//        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-//        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-//        ivTmp.setLayoutParams(params);
-
-//        tvMin = new TextView(this);
-//        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-//        params2.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-//        params2.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-//        tvMin.setLayoutParams(params2);
-//        tvMin.setTextColor(Color.parseColor("#ff0000"));
-
-        SeekBar.OnSeekBarChangeListener listener = new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                if (orgBp==null || resBp==null || tmpBp==null || seekBar.getTag() == null)
-                    return;
-
-                switch ((String)seekBar.getTag()){
-                    case "Min" :
-                        flnnMin = i;
-                        break;
-                    case "Max" :
-                        flnnMax = i;
-                        break;
-                }
-
-                featureMatch();
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        };
-
-        SeekBar sbflnnMin = new SeekBar(this);
-        RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(300, 150);
-        params1.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        params1.setMargins(0, 0, 0, 150);
-        sbflnnMin.setTag("Min");
-        sbflnnMin.setLayoutParams(params1);
-        sbflnnMin.setOnSeekBarChangeListener(listener);
-        sbflnnMin.setMax(500);
-        sbflnnMin.setProgress(flnnMin);
-
-        SeekBar sbflnnMax = new SeekBar(this);
-        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(300, 150);
-        params2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        sbflnnMin.setTag("Max");
-        sbflnnMax.setLayoutParams(params2);
-        sbflnnMax.setOnSeekBarChangeListener(listener);
-        sbflnnMax.setMax(500);
-        sbflnnMin.setProgress(flnnMax);
-
-//        rl.addView(ivTmp);
-//        rl.addView(tvMin);
-        rl.addView(sbflnnMin);
-        rl.addView(sbflnnMax);
         fl.addView(rl);
 
         //

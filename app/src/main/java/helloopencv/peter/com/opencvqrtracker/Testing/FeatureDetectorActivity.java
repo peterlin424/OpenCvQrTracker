@@ -1,4 +1,4 @@
-package helloopencv.peter.com.opencvqrtracker;
+package helloopencv.peter.com.opencvqrtracker.Testing;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -10,7 +10,10 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-public class MainActivity extends Activity {
+import helloopencv.peter.com.opencvqrtracker.R;
+import helloopencv.peter.com.opencvqrtracker.myNDK;
+
+public class FeatureDetectorActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

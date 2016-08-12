@@ -30,23 +30,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
-        </activity>
         <activity
             android:name=".QrTrackerActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <!--
              ATTENTION: This was auto-generated to add Google Play services to your project for
@@ -56,12 +50,23 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+
+        <activity android:name=".Testing.FeatureDetectorActivity">
+
+        </activity>
+
         <activity
-            android:name=".TestActivity"
-            android:label="@string/title_activity_test"
+            android:name=".Testing.FeatureMatchingActivity"
             android:configChanges="keyboardHidden|orientation"
+            android:label="@string/title_activity_test"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".Testing.PatternMatchActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -70,5 +75,4 @@
         </activity>
 
     </application>
-
 </manifest>
