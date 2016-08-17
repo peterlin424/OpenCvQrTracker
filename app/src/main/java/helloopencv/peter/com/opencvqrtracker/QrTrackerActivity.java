@@ -56,7 +56,7 @@ public class QrTrackerActivity extends Activity {
     };
 
     private Mat mRgba;
-    private PatternMatchItem[] matcher = new PatternMatchItem[5];
+    private PatternMatchItem[][] matcher = new PatternMatchItem[5][4];
     private int maxSize = 10;
     private QrItem[] qrItems = new QrItem[maxSize];
     private int minThreshold = 131;
@@ -119,15 +119,50 @@ public class QrTrackerActivity extends Activity {
                     Mat bpMat = new Mat();
                     Utils.bitmapToMat(bitmap, bpMat);
 
-                    if (matcher[0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0].addr)))
+                    //
+                    if (matcher[0][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][0].addr)))
                         code = "matcher1";
-                    else if (matcher[1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1].addr)))
+                    else if (matcher[0][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][1].addr)))
+                        code = "matcher1";
+                    else if (matcher[0][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][2].addr)))
+                        code = "matcher1";
+                    else if (matcher[0][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][3].addr)))
+                        code = "matcher1";
+                    //
+                    else if (matcher[1][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][0].addr)))
                         code = "matcher2";
-                    else if (matcher[2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2].addr)))
+                    else if (matcher[1][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][1].addr)))
+                        code = "matcher2";
+                    else if (matcher[1][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][2].addr)))
+                        code = "matcher2";
+                    else if (matcher[1][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][3].addr)))
+                        code = "matcher2";
+                    //
+                    else if (matcher[2][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][0].addr)))
                         code = "matcher3";
-                    else if (matcher[3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3].addr)))
+                    else if (matcher[2][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][1].addr)))
+                        code = "matcher3";
+                    else if (matcher[2][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][2].addr)))
+                        code = "matcher3";
+                    else if (matcher[2][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][3].addr)))
+                        code = "matcher3";
+                    //
+                    else if (matcher[3][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][0].addr)))
                         code = "matcher4";
-                    else if (matcher[4].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4].addr)))
+                    else if (matcher[3][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][1].addr)))
+                        code = "matcher4";
+                    else if (matcher[3][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][2].addr)))
+                        code = "matcher4";
+                    else if (matcher[3][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][3].addr)))
+                        code = "matcher4";
+                    //
+                    else if (matcher[4][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][0].addr)))
+                        code = "matcher5";
+                    else if (matcher[4][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][1].addr)))
+                        code = "matcher5";
+                    else if (matcher[4][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][2].addr)))
+                        code = "matcher5";
+                    else if (matcher[4][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][3].addr)))
                         code = "matcher5";
                     
 //                    code = String.valueOf(min);
@@ -271,21 +306,71 @@ public class QrTrackerActivity extends Activity {
         paint.setColor(Color.BLACK);  //設定字體顏色
 
         // set match array
-        matcher[0] = new PatternMatchItem(
+        matcher[0][0] = new PatternMatchItem(
                 BitmapFactory.decodeResource(getResources(), R.drawable.tool1_1),
-                0.09f);
-        matcher[1] = new PatternMatchItem(
+                0.085f);
+        matcher[0][1] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_2),
+                0.085f);
+        matcher[0][2] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_3),
+                0.085f);
+        matcher[0][3] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_4),
+                0.085f);
+        //
+        matcher[1][0] = new PatternMatchItem(
                 BitmapFactory.decodeResource(getResources(), R.drawable.tool2_1),
                 0.09f);
-        matcher[2] = new PatternMatchItem(
+        matcher[1][1] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_2),
+                0.09f);
+        matcher[1][2] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_3),
+                0.09f);
+        matcher[1][3] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_4),
+                0.09f);
+        //
+        matcher[2][0] = new PatternMatchItem(
                 BitmapFactory.decodeResource(getResources(), R.drawable.tool3_1),
                 0.09f);
-        matcher[3] = new PatternMatchItem(
+        matcher[2][1] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_2),
+                0.09f);
+        matcher[2][2] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_3),
+                0.09f);
+        matcher[2][3] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_4),
+                0.09f);
+        //
+        matcher[3][0] = new PatternMatchItem(
                 BitmapFactory.decodeResource(getResources(), R.drawable.tool4_1),
                 0.09f);
-        matcher[4] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_1),
+        matcher[3][1] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_2),
                 0.09f);
+        matcher[3][2] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_3),
+                0.09f);
+        matcher[3][3] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_4),
+                0.09f);
+        //
+        matcher[4][0] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_1),
+                0.085f);
+        matcher[4][1] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_2),
+                0.085f);
+        matcher[4][2] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_3),
+                0.085f);
+        matcher[4][3] = new PatternMatchItem(
+                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_4),
+                0.085f);
+
     }
 
     @Override
