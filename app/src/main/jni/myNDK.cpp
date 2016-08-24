@@ -14,6 +14,10 @@
 #include </Users/linweijie/DevelopKit/OpenCV/Android/2.4.11/OpenCV-android-sdk/sdk/native/jni/include/opencv2/nonfree/nonfree.hpp>
 
 #include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/stitching/stitcher.hpp"
+#include "opencv2/stitching/warpers.hpp"
+
+#include "opencv2/stitching/detail/exposure_compensate.hpp"
 
 using namespace cv;
 
@@ -46,7 +50,7 @@ void MyFilledCircle( Mat img, Point center, Scalar color ) {
 }
 
 // reference http://www.ipol.im/pub/art/2011/llmps-scb/
-void balance_white(cv::Mat mat, double discard_ratio) {
+void balance_white(Mat mat, double discard_ratio) {
 
     int hists[3][256];
     memset(hists, 0, 3*256*sizeof(int));
@@ -92,10 +96,6 @@ void balance_white(cv::Mat mat, double discard_ratio) {
         }
     }
 }
-
-
-
-
 
 /**
  * Demo function
