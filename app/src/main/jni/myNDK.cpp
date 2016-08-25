@@ -159,11 +159,12 @@ JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrT
             continue;
 
         if (abs(poly[i][0].x - poly[i][2].x) < 1.3 * abs(poly[i][0].y - poly[i][2].y)){
-            drawContours(*orgMat, poly, i, Scalar(0, 0, 255), 2, 8, vector<Vec4i>(), 0, Point());
+            drawContours(*orgMat, poly, i, Scalar(0, 255, 0), 5, 8, vector<Vec4i>(), 0, Point());
             marker.push_back(poly[i]);
-        } else {
-            drawContours(*orgMat, poly, i, Scalar(255, 0, 0), 2, 8, vector<Vec4i>(), 0, Point());
         }
+//        else {
+//            drawContours(*orgMat, poly, i, Scalar(255, 0, 0), 2, 8, vector<Vec4i>(), 0, Point());
+//        }
     }
 
     // TODO 還原旋轉
@@ -209,11 +210,11 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrD
         int y = (showMarker[count][0].y + showMarker[count][1].y + showMarker[count][2].y + showMarker[count][3].y)/4;
         string str = env->GetStringUTFChars(qrCode, 0);
 
-        putText(*orgMat, str, Point2f(x, y), FONT_HERSHEY_COMPLEX, 1,  Scalar(247,255,46));
+        putText(*orgMat, str, Point2f(x, y), FONT_HERSHEY_DUPLEX, 2,  Scalar(255,0,255), 3);
     }
 }
 
-//TODO
+
 JNIEXPORT jdouble JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1ImageMatching
         (JNIEnv *env, jobject obj, jlong orgImage, jlong tmpImage){
 
