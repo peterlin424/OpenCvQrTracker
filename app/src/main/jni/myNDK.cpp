@@ -50,52 +50,52 @@ void MyFilledCircle( Mat img, Point center, Scalar color ) {
 }
 
 // reference http://www.ipol.im/pub/art/2011/llmps-scb/
-void balance_white(Mat mat, double discard_ratio) {
-
-    int hists[3][256];
-    memset(hists, 0, 3*256*sizeof(int));
-
-    for (int y = 0; y < mat.rows; ++y) {
-        uchar* ptr = mat.ptr<uchar>(y);
-        for (int x = 0; x < mat.cols; ++x) {
-            for (int j = 0; j < 3; ++j) {
-                hists[j][ptr[x * 3 + j]] += 1;
-            }
-        }
-    }
-
-    // cumulative hist
-    int total = mat.cols*mat.rows;
-    int vmin[3], vmax[3];
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 255; ++j) {
-            hists[i][j + 1] += hists[i][j];
-        }
-        vmin[i] = 0;
-        vmax[i] = 255;
-        while (hists[i][vmin[i]] < discard_ratio * total)
-            vmin[i] += 1;
-        while (hists[i][vmax[i]] > (1 - discard_ratio) * total)
-            vmax[i] -= 1;
-        if (vmax[i] < 255 - 1)
-            vmax[i] += 1;
-    }
-
-
-    for (int y = 0; y < mat.rows; ++y) {
-        uchar* ptr = mat.ptr<uchar>(y);
-        for (int x = 0; x < mat.cols; ++x) {
-            for (int j = 0; j < 3; ++j) {
-                int val = ptr[x * 3 + j];
-                if (val < vmin[j])
-                    val = vmin[j];
-                if (val > vmax[j])
-                    val = vmax[j];
-                ptr[x * 3 + j] = static_cast<uchar>((val - vmin[j]) * 255.0 / (vmax[j] - vmin[j]));
-            }
-        }
-    }
-}
+//void balance_white(Mat mat, double discard_ratio) {
+//
+//    int hists[3][256];
+//    memset(hists, 0, 3*256*sizeof(int));
+//
+//    for (int y = 0; y < mat.rows; ++y) {
+//        uchar* ptr = mat.ptr<uchar>(y);
+//        for (int x = 0; x < mat.cols; ++x) {
+//            for (int j = 0; j < 3; ++j) {
+//                hists[j][ptr[x * 3 + j]] += 1;
+//            }
+//        }
+//    }
+//
+//    // cumulative hist
+//    int total = mat.cols*mat.rows;
+//    int vmin[3], vmax[3];
+//    for (int i = 0; i < 3; ++i) {
+//        for (int j = 0; j < 255; ++j) {
+//            hists[i][j + 1] += hists[i][j];
+//        }
+//        vmin[i] = 0;
+//        vmax[i] = 255;
+//        while (hists[i][vmin[i]] < discard_ratio * total)
+//            vmin[i] += 1;
+//        while (hists[i][vmax[i]] > (1 - discard_ratio) * total)
+//            vmax[i] -= 1;
+//        if (vmax[i] < 255 - 1)
+//            vmax[i] += 1;
+//    }
+//
+//
+//    for (int y = 0; y < mat.rows; ++y) {
+//        uchar* ptr = mat.ptr<uchar>(y);
+//        for (int x = 0; x < mat.cols; ++x) {
+//            for (int j = 0; j < 3; ++j) {
+//                int val = ptr[x * 3 + j];
+//                if (val < vmin[j])
+//                    val = vmin[j];
+//                if (val > vmax[j])
+//                    val = vmax[j];
+//                ptr[x * 3 + j] = static_cast<uchar>((val - vmin[j]) * 255.0 / (vmax[j] - vmin[j]));
+//            }
+//        }
+//    }
+//}
 
 /**
  * Demo function
@@ -103,18 +103,24 @@ void balance_white(Mat mat, double discard_ratio) {
 
 vector<vector<Point> > showMarker;
 
+//JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
+//        (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages,
+//         jint minThreshold, jint maxThreshold,
+//         jboolean isThreshold, jboolean isBalanceWhite,
+//         jdouble whiteBalance){
+
 JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
         (JNIEnv * env, jobject obj, jlong orgImage, jlongArray qrImages,
          jint minThreshold, jint maxThreshold,
-         jboolean isThreshold, jboolean isBalanceWhite,
-         jdouble whiteBalance){
+         jboolean isThreshold){
+
 
     showMarker.clear();
     Mat* orgMat = (Mat*) orgImage;
 
-    if (isBalanceWhite) {
-        balance_white(*orgMat, whiteBalance);
-    }
+//    if (isBalanceWhite) {
+//        balance_white(*orgMat, whiteBalance);
+//    }
 
     Mat dstMat = *orgMat;
 

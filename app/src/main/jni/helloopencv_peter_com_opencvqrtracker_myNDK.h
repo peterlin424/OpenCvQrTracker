@@ -34,10 +34,10 @@ JNIEXPORT void JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1Gra
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK
  * Method:    jni_QrTracking
- * Signature: (J[JIIZZD)I
+ * Signature: (J[JIIZ)I
  */
 JNIEXPORT jint JNICALL Java_helloopencv_peter_com_opencvqrtracker_myNDK_jni_1QrTracking
-  (JNIEnv *, jobject, jlong, jlongArray, jint, jint, jboolean, jboolean, jdouble);
+  (JNIEnv *, jobject, jlong, jlongArray, jint, jint, jboolean);
 
 /*
  * Class:     helloopencv_peter_com_opencvqrtracker_myNDK

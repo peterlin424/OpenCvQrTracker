@@ -18,22 +18,25 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
 
     interface ViewListener {
         void OnChangeThresholdView(boolean state);
-        void OnChangeBalanceWhite(boolean state);
+//        void OnChangeBalanceWhite(boolean state);
         void OnChangeMinThreshold(int min);
-        void OnChangeWhiteBalance(int wb);
+//        void OnChangeWhiteBalance(int wb);
     }
 
     private ViewListener listener;
 
-    private TextView tvTh, tvWb;
-    private Button btShow, btTh, btBw;
-    private SeekBar sbTh, sbWb;
+//    private TextView tvTh, tvWb;
+    private TextView tvTh;
+//    private Button btShow, btTh, btBw;
+    private Button btShow, btTh;
+//    private SeekBar sbTh, sbWb;
+    private SeekBar sbTh;
     private LinearLayout llPanel;
 
     private int minThreshold = 0;
-    private int whiteBalance = 0;
+//    private int whiteBalance = 0;
     private boolean isThreshold = false;
-    private boolean isBalanceWhite = false;
+//    private boolean isBalanceWhite = false;
 
     public DebugView(Context context, ViewListener listener) {
 
@@ -63,19 +66,21 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
         btShow = (Button) findViewById(R.id.bt_show);
 
         btTh = (Button) findViewById(R.id.bt_th);
-        btBw = (Button) findViewById(R.id.bt_bw);
+//        btBw = (Button) findViewById(R.id.bt_bw);
 
         tvTh = (TextView) findViewById(R.id.tv_th);
         sbTh = (SeekBar) findViewById(R.id.sb_th);
-        tvWb = (TextView) findViewById(R.id.tv_wb);
-        sbWb = (SeekBar) findViewById(R.id.sb_wb);
+//        tvWb = (TextView) findViewById(R.id.tv_wb);
+//        sbWb = (SeekBar) findViewById(R.id.sb_wb);
 
         btShow.setOnClickListener(this);
         btTh.setOnClickListener(this);
-        btBw.setOnClickListener(this);
+//        btBw.setOnClickListener(this);
 
         sbTh.setOnSeekBarChangeListener(this);
-        sbWb.setOnSeekBarChangeListener(this);
+//        sbWb.setOnSeekBarChangeListener(this);
+
+        llPanel.setVisibility(INVISIBLE);
     }
 
     public void setPanelColor(String color){
@@ -83,22 +88,22 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
     }
     public void setTextColor(String color){
         tvTh.setTextColor(Color.parseColor(color));
-        tvWb.setTextColor(Color.parseColor(color));
+//        tvWb.setTextColor(Color.parseColor(color));
     }
     public void setMinThreshold(int min){
         minThreshold = min;
         sbTh.setProgress(min);
     }
-    public void setWhiteBalance(int wb){
-        whiteBalance = wb;
-        sbWb.setProgress(wb);
-    }
+//    public void setWhiteBalance(int wb){
+//        whiteBalance = wb;
+//        sbWb.setProgress(wb);
+//    }
     public void setThreshold(boolean state){
         isThreshold = state;
     }
-    public void setBalanceWhite(boolean state){
-        isBalanceWhite = state;
-    }
+//    public void setBalanceWhite(boolean state){
+//        isBalanceWhite = state;
+//    }
 
     /**
      * OnClickListener
@@ -132,16 +137,16 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
 
                 break;
 
-            case R.id.bt_bw:
-
-                if (isBalanceWhite)
-                    isBalanceWhite = false;
-                else
-                    isBalanceWhite = true;
-
-                listener.OnChangeBalanceWhite(isBalanceWhite);
-
-                break;
+//            case R.id.bt_bw:
+//
+//                if (isBalanceWhite)
+//                    isBalanceWhite = false;
+//                else
+//                    isBalanceWhite = true;
+//
+//                listener.OnChangeBalanceWhite(isBalanceWhite);
+//
+//                break;
         }
     }
 
@@ -156,11 +161,11 @@ public class DebugView extends RelativeLayout implements View.OnClickListener, S
                 tvTh.setText(String.valueOf(i));
                 listener.OnChangeMinThreshold(i);
                 break;
-            case R.id.sb_wb:
-                whiteBalance = i;
-                tvWb.setText(String.valueOf(i));
-                listener.OnChangeWhiteBalance(i);
-                break;
+//            case R.id.sb_wb:
+//                whiteBalance = i;
+//                tvWb.setText(String.valueOf(i));
+//                listener.OnChangeWhiteBalance(i);
+//                break;
         }
     }
 

@@ -2,6 +2,7 @@ package helloopencv.peter.com.opencvqrtracker;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -17,6 +18,7 @@ public class SubSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
 
     interface SurfaceListener{
         void drawing(Canvas canvas);
+        void touch(int x, int y);
     }
     public SubSurfaceView(Context context, SurfaceListener listener) {
         super(context);
@@ -60,5 +62,22 @@ public class SubSurfaceView extends SurfaceView implements SurfaceHolder.Callbac
         c.save();
         listener.drawing(c);
         c.restore();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+//        return super.onTouchEvent(event);
+
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                listener.touch((int)event.getX(), (int)event.getY());
+                break;
+            case MotionEvent.ACTION_MOVE:
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+        }
+
+        return true;
     }
 }

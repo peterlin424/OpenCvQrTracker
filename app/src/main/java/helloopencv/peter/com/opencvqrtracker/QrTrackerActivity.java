@@ -8,19 +8,22 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,9 +64,9 @@ public class QrTrackerActivity extends Activity {
     private QrItem[] qrItems = new QrItem[maxSize];
     private int minThreshold = 131;
     private int maxThreshold = 255;
-    private int whiteBalance = 5;
+//    private int whiteBalance = 5;
     private boolean isThreshold = false;
-    private boolean isBalanceWhite = false;
+//    private boolean isBalanceWhite = false;
 
     private CameraBridgeViewBase.CvCameraViewListener2 cameraViewListener = new CameraBridgeViewBase.CvCameraViewListener2() {
         @Override
@@ -91,9 +94,10 @@ public class QrTrackerActivity extends Activity {
             }
 
             // 追蹤 jni api
-            double ratio = (double)whiteBalance / 100.f;
-            Log.d(TAG, "whiteBalance ratio : " + String.valueOf(ratio));
-            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr, minThreshold, maxThreshold, isThreshold, isBalanceWhite, ratio);
+//            double ratio = (double)whiteBalance / 100.f;
+//            Log.d(TAG, "whiteBalance ratio : " + String.valueOf(ratio));
+//            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr, minThreshold, maxThreshold, isThreshold, isBalanceWhite, ratio);
+            int c = ndk.jni_QrTracking(mRgba.getNativeObjAddr(), qrsAddr, minThreshold, maxThreshold, isThreshold);
             Log.d(TAG, "count : " + String.valueOf(c));
 
             // 結果 QR 影像轉換
@@ -121,77 +125,78 @@ public class QrTrackerActivity extends Activity {
 
                     //1
                     if (matcher[0][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][0].addr)))
-                        code = "matcher1";
+                        code = "TOOL-001";
                     else if (matcher[0][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][1].addr)))
-                        code = "matcher1";
+                        code = "TOOL-001";
                     else if (matcher[0][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][2].addr)))
-                        code = "matcher1";
+                        code = "TOOL-001";
                     else if (matcher[0][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[0][3].addr)))
-                        code = "matcher1";
+                        code = "TOOL-001";
                     //2
                     else if (matcher[1][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][0].addr)))
-                        code = "matcher2";
+                        code = "TOOL-002";
                     else if (matcher[1][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][1].addr)))
-                        code = "matcher2";
+                        code = "TOOL-002";
                     else if (matcher[1][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][2].addr)))
-                        code = "matcher2";
+                        code = "TOOL-002";
                     else if (matcher[1][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[1][3].addr)))
-                        code = "matcher2";
+                        code = "TOOL-002";
                     //3
                     else if (matcher[2][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][0].addr)))
-                        code = "matcher3";
+                        code = "TOOL-003";
                     else if (matcher[2][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][1].addr)))
-                        code = "matcher3";
+                        code = "TOOL-003";
                     else if (matcher[2][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][2].addr)))
-                        code = "matcher3";
+                        code = "TOOL-003";
                     else if (matcher[2][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[2][3].addr)))
-                        code = "matcher3";
+                        code = "TOOL-003";
                     //4
                     else if (matcher[3][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][0].addr)))
-                        code = "matcher4";
+                        code = "TOOL-004";
                     else if (matcher[3][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][1].addr)))
-                        code = "matcher4";
+                        code = "TOOL-004";
                     else if (matcher[3][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][2].addr)))
-                        code = "matcher4";
+                        code = "TOOL-004";
                     else if (matcher[3][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[3][3].addr)))
-                        code = "matcher4";
+                        code = "TOOL-004";
                     //5
                     else if (matcher[4][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][0].addr)))
-                        code = "matcher5";
+                        code = "3L FCCL";
                     else if (matcher[4][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][1].addr)))
-                        code = "matcher5";
+                        code = "3L FCCL";
                     else if (matcher[4][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][2].addr)))
-                        code = "matcher5";
+                        code = "3L FCCL";
                     else if (matcher[4][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[4][3].addr)))
-                        code = "matcher5";
+                        code = "3L FCCL";
                         //6
                     else if (matcher[5][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[5][0].addr)))
-                        code = "matcher6";
+                        code = "2L FCCL";
                     else if (matcher[5][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[5][1].addr)))
-                        code = "matcher6";
+                        code = "2L FCCL";
                     else if (matcher[5][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[5][2].addr)))
-                        code = "matcher5";
+                        code = "2L FCCL";
                     else if (matcher[5][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[5][3].addr)))
-                        code = "matcher6";
+                        code = "2L FCCL";
                         //7
                     else if (matcher[6][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[6][0].addr)))
-                        code = "matcher7";
+                        code = "Coverlay";
                     else if (matcher[6][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[6][1].addr)))
-                        code = "matcher7";
+                        code = "Coverlay";
                     else if (matcher[6][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[6][2].addr)))
-                        code = "matcher7";
+                        code = "Coverlay";
                     else if (matcher[6][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[6][3].addr)))
-                        code = "matcher7";
+                        code = "Coverlay";
                         //8
                     else if (matcher[7][0].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[7][0].addr)))
-                        code = "matcher7";
+                        code = "Composited PI Sheet";
                     else if (matcher[7][1].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[7][1].addr)))
-                        code = "matcher7";
+                        code = "Composited PI Sheet";
                     else if (matcher[7][2].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[7][2].addr)))
-                        code = "matcher7";
+                        code = "Composited PI Sheet";
                     else if (matcher[7][3].matching(ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[7][3].addr)))
-                        code = "matcher7";
+                        code = "Composited PI Sheet";
 
+//                    double min = ndk.jni_ImageMatching(bpMat.getNativeObjAddr(), matcher[7][0].addr);
 //                    code = String.valueOf(min);
                 }
 
@@ -251,9 +256,42 @@ public class QrTrackerActivity extends Activity {
             // 繪製 QR 資訊
             int i = 0;
             for (QrItem temp : qrItems) {
-                if (temp != null) {
+                if (temp != null && temp.info != "") {
                     canvas.drawBitmap(temp.bitmap, temp.imgPos[0], temp.imgPos[1], paint);
                     canvas.drawText(temp.info, temp.infoPos[0], temp.infoPos[1], paint);
+                }
+                i++;
+            }
+        }
+
+        @Override
+        public void touch(int x, int y) {
+            // TODO show info dialog
+            Log.d(TAG, "touch pos x : " + String.valueOf(x) + ", " + "pos y : " + String.valueOf(y));
+            int i = 0;
+            for (QrItem temp : qrItems) {
+                if (temp != null && temp.info != "") {
+
+                    int areaYmin = (int)temp.imgPos[1];
+                    int areaYmax = (int)temp.imgPos[1] + 85;
+
+                    if (y<areaYmin || y>=areaYmax)
+                        continue;
+
+                    switch (temp.info){
+                        case "3L FCCL":
+                            showInfoDialog(R.drawable.info_01);
+                            break;
+                        case "2L FCCL":
+                            showInfoDialog(R.drawable.info_02);
+                            break;
+                        case "Coverlay":
+                            showInfoDialog(R.drawable.info_04);
+                            break;
+                        case "Composited PI Sheet":
+                            showInfoDialog(R.drawable.info_03);
+                            break;
+                    }
                 }
                 i++;
             }
@@ -267,23 +305,28 @@ public class QrTrackerActivity extends Activity {
             isThreshold = state;
         }
 
-        @Override
-        public void OnChangeBalanceWhite(boolean state) {
-            isBalanceWhite = state;
-        }
+//        @Override
+//        public void OnChangeBalanceWhite(boolean state) {
+//            isBalanceWhite = state;
+//        }
 
         @Override
         public void OnChangeMinThreshold(int min) {
             minThreshold = min;
-            dba.update(String.valueOf(minThreshold), String.valueOf(whiteBalance));
+//            dba.update(String.valueOf(minThreshold), String.valueOf(whiteBalance));
+            dba.update(String.valueOf(minThreshold), String.valueOf(0));
         }
 
-        @Override
-        public void OnChangeWhiteBalance(int wb) {
-            whiteBalance = wb;
-            dba.update(String.valueOf(minThreshold), String.valueOf(whiteBalance));
-        }
+//        @Override
+//        public void OnChangeWhiteBalance(int wb) {
+//            whiteBalance = wb;
+//            dba.update(String.valueOf(minThreshold), String.valueOf(whiteBalance));
+//        }
     };
+
+    private RelativeLayout rlInfoDialog;
+    private ImageButton btClose;
+    private ImageView ivInfoImage;
 
     static {
         if (!OpenCVLoader.initDebug()) {
@@ -305,7 +348,7 @@ public class QrTrackerActivity extends Activity {
         // set Surface View
         LinearLayout layout = (LinearLayout) findViewById(R.id.ll_subview);
         qrItems[0] = new QrItem(BitmapFactory.decodeResource(getResources(),
-                R.drawable.opencv_logo_white), "hello qr tracker", 0, 0);
+                R.mipmap.ic_launcher), "hello qr tracker", 0, 0);
         surfaceView = new SubSurfaceView(this, surfaceListener);
         layout.addView(surfaceView);
 
@@ -314,9 +357,10 @@ public class QrTrackerActivity extends Activity {
         HashMap<String, String> dbValue = dba.query();
         if (dbValue != null){
             minThreshold = Integer.valueOf(dbValue.get(ThresholdDBA.COL_THRESHOLD));
-            whiteBalance = Integer.valueOf(dbValue.get(ThresholdDBA.COL_WHITEBALANCE));
+//            whiteBalance = Integer.valueOf(dbValue.get(ThresholdDBA.COL_WHITEBALANCE));
         } else {
-            dba.insert(String.valueOf(minThreshold), String.valueOf(whiteBalance));
+//            dba.insert(String.valueOf(minThreshold), String.valueOf(whiteBalance));
+            dba.insert(String.valueOf(minThreshold), String.valueOf(0));
         }
 
         // set Debug View
@@ -324,9 +368,9 @@ public class QrTrackerActivity extends Activity {
         RelativeLayout llDebug = (RelativeLayout) findViewById(R.id.debug_view);
         llDebug.addView(debugView);
         debugView.setMinThreshold(minThreshold);
-        debugView.setWhiteBalance(whiteBalance);
+//        debugView.setWhiteBalance(whiteBalance);
         debugView.setThreshold(isThreshold);
-        debugView.setBalanceWhite(isBalanceWhite);
+//        debugView.setBalanceWhite(isBalanceWhite);
 
         //
         paint.setTextSize(30);         //設定字體大小
@@ -334,112 +378,123 @@ public class QrTrackerActivity extends Activity {
 
         // set match array
         matcher[0][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_1),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo1_1),
+                0.1f);
         matcher[0][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_2),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo1_2),
+                0.1f);
         matcher[0][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_3),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo1_3),
+                0.1f);
         matcher[0][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool1_4),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo1_4),
+                0.1f);
         //
         matcher[1][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_1),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo2_1),
+                0.1f);
         matcher[1][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_2),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo2_2),
+                0.1f);
         matcher[1][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_3),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo2_3),
+                0.1f);
         matcher[1][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool2_4),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo2_4),
+                0.1f);
         //
         matcher[2][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_1),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo3_1),
+                0.1f);
         matcher[2][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_2),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo3_2),
+                0.1f);
         matcher[2][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_3),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo3_3),
+                0.1f);
         matcher[2][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool3_4),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo3_4),
+                0.1f);
         //
         matcher[3][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_1),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo4_1),
+                0.1f);
         matcher[3][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_2),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo4_2),
+                0.1f);
         matcher[3][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_3),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo4_3),
+                0.1f);
         matcher[3][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool4_4),
-                0.09f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo4_4),
+                0.1f);
         //
         matcher[4][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_1),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo5_1),
+                0.1f);
         matcher[4][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_2),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo5_2),
+                0.1f);
         matcher[4][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_3),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo5_3),
+                0.1f);
         matcher[4][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool5_4),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo5_4),
+                0.1f);
 
         //
         matcher[5][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool6_1),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo6_1),
+                0.1f);
         matcher[5][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool6_2),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo6_2),
+                0.1f);
         matcher[5][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool6_3),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo6_3),
+                0.1f);
         matcher[5][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool6_4),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo6_4),
+                0.1f);
 
         //
         matcher[6][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool7_1),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo7_1),
+                0.1f);
         matcher[6][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool7_2),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo7_2),
+                0.1f);
         matcher[6][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool7_3),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo7_3),
+                0.1f);
         matcher[6][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool7_4),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo7_4),
+                0.1f);
 
         //
         matcher[7][0] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool8_1),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo8_1),
+                0.1f);
         matcher[7][1] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool8_2),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo8_2),
+                0.1f);
         matcher[7][2] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool8_3),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo8_3),
+                0.1f);
         matcher[7][3] = new PatternMatchItem(
-                BitmapFactory.decodeResource(getResources(), R.drawable.tool8_4),
-                0.085f);
+                BitmapFactory.decodeResource(getResources(), R.drawable.demo8_4),
+                0.1f);
 
+        //
+        rlInfoDialog = (RelativeLayout)findViewById(R.id.rl_info_dialog);
+        btClose = (ImageButton)findViewById(R.id.bt_close);
+        ivInfoImage = (ImageView)findViewById(R.id.iv_info_image);
+        btClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rlInfoDialog.setVisibility(View.GONE);
+                ivInfoImage.setImageBitmap(null);
+            }
+        });
     }
 
     @Override
@@ -462,5 +517,11 @@ public class QrTrackerActivity extends Activity {
         super.onDestroy();
         mOpenCvCameraView.disableView();
         dba.closeDB();
+    }
+
+
+    private void showInfoDialog(int id){
+        rlInfoDialog.setVisibility(View.VISIBLE);
+        ivInfoImage.setImageBitmap(BitmapFactory.decodeResource(getResources(), id));
     }
 }

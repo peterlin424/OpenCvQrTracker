@@ -33,4 +33,30 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/debug_view" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#dddddd"
+        android:layout_margin="40dp"
+        android:id="@+id/rl_info_dialog"
+        android:visibility="gone">
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/bt_close"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/icon_close"
+            android:scaleType="fitXY"
+            android:background="#dddddd" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/iv_info_image" />
+    </RelativeLayout>
+
+
 </RelativeLayout>

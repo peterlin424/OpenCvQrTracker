@@ -55,13 +55,13 @@
 
         </activity>
 
-        <activity
-            android:name=".Testing.FeatureMatchingActivity"
-            android:configChanges="keyboardHidden|orientation"
-            android:label="@string/title_activity_test"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+        <!--<activity-->
+            <!--android:name=".Testing.FeatureMatchingActivity"-->
+            <!--android:configChanges="keyboardHidden|orientation"-->
+            <!--android:label="@string/title_activity_test"-->
+            <!--android:screenOrientation="landscape"-->
+            <!--android:theme="@style/AppTheme.NoActionBar">-->
+        <!--</activity>-->
 
         <activity android:name=".Testing.PatternMatchActivity"
             android:configChanges="keyboardHidden|orientation"

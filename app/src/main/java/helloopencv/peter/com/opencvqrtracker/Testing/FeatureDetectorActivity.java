@@ -22,7 +22,7 @@ public class FeatureDetectorActivity extends Activity {
         ImageView root = new ImageView(this);
         setContentView(root);
 
-        Bitmap bp = BitmapFactory.decodeResource(getResources(), R.drawable.opencv_logo_white);
+        Bitmap bp = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
 
         // 初始 NDK Library
         myNDK ndk = new myNDK();
